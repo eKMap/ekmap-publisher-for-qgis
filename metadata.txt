@@ -12,8 +12,8 @@ email=info@ekgis.com.vn
 
 about=To publish map information to eKMap Server
 
-tracker=http://bugs
-repository=http://repo
+tracker=https://github.com/eKMap/ekmap-publisher-for-qgis/issues
+repository=https://github.com/eKMap/ekmap-publisher-for-qgis
 # End of mandatory metadata
 
 # Recommended items:
