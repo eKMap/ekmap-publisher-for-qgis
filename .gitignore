@@ -5,3 +5,5 @@
 /test
 /README.txt
 /README.html
+/ekmap_server/__pycache__
+/ui/__pycache__
