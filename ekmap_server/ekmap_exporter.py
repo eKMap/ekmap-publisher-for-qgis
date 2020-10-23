@@ -1,12 +1,13 @@
 from qgis.core import QgsProject, Qgis, QgsRuleBasedRenderer, QgsVectorFileWriter, QgsMessageLog
-from .ekmap_converter import *
+from .ekmap_converter import eKConverter
 from .ekmap_common import *
+from .qgslayer_parser.symbol_layer_factory import SymbolLayerFactory
 
 import os.path, json, uuid, urllib.parse
 
 class EKMapExporter:
     def __init__(self, iface, instance):
-        self.iface = iface
+        eKConverter.IFACE = iface
         self.instance = instance
         self.sourcePaths = {}
         self.externalGraphics = []
@@ -18,15 +19,15 @@ class EKMapExporter:
         mapInfo["Title"] = self.instance.baseName()
         mapInfo["Description"] = None # không tìm thấy
         mapInfo["CurrentView"] = self._wrapCurrentView()
-        mapInfo["MaxExtent"] = self._wrapExtent(self.iface.mapCanvas().fullExtent())
-        mapInfo["RestrictExtent"] = self._wrapExtent(self.iface.mapCanvas().fullExtent())
+        mapInfo["MaxExtent"] = self._wrapExtent(eKConverter.IFACE.mapCanvas().fullExtent())
+        mapInfo["RestrictExtent"] = self._wrapExtent(eKConverter.IFACE.mapCanvas().fullExtent())
 
         mapScales = self.instance.viewSettings().mapScales()
         minLevel = 0 # mặc định
         maxLevel = 22 # mặc định
         if len(mapScales) > 0 :
-            minLevel = convertScaleToLevel(self.iface, mapScales[0])
-            maxLevel = convertScaleToLevel(self.iface, mapScales[len(mapScales) - 1])
+            minLevel = eKConverter.convertScaleToLevel(mapScales[0])
+            maxLevel = eKConverter.convertScaleToLevel(mapScales[len(mapScales) - 1])
         mapInfo["MinLevel"] = minLevel 
         mapInfo["MaxLevel"] = maxLevel 
         mapInfo["Config"] = None # chưa support
@@ -37,9 +38,9 @@ class EKMapExporter:
 
     def _wrapCurrentView(self):
         currentView = {}
-        currentView["x"] = self.iface.mapCanvas().center().x()
-        currentView["y"] = self.iface.mapCanvas().center().y()
-        currentView["level"] = convertScaleToLevel(self.iface, self.iface.mapCanvas().scale())
+        currentView["x"] = eKConverter.IFACE.mapCanvas().center().x()
+        currentView["y"] = eKConverter.IFACE.mapCanvas().center().y()
+        currentView["level"] = eKConverter.convertScaleToLevel(eKConverter.IFACE.mapCanvas().scale())
         return currentView
 
     def _wrapExtent(self, inputExtent):
@@ -95,7 +96,7 @@ class EKMapExporter:
             else:
                 layer["Type"] = "Feature layer"
                 style = self._wrapStyle(mapLayer) # gọi trước để lấy giá trị GeoType
-                layer["GeoType"] = convertLayerToGeoType(self._geoType)
+                layer["GeoType"] = eKConverter.convertLayerToGeoType(self._geoType)
                 if style is not None:
                     style = json.dumps(style)
                 layer["Style"] = style
@@ -104,8 +105,8 @@ class EKMapExporter:
                     styleLabel = json.dumps(styleLabel)
                 layer["StyleLabel"] = styleLabel
 
-                minLevel = convertScaleToLevel(self.iface, mapLayer.minimumScale())
-                maxLevel = convertScaleToLevel(self.iface, mapLayer.maximumScale())
+                minLevel = eKConverter.convertScaleToLevel(mapLayer.minimumScale())
+                maxLevel = eKConverter.convertScaleToLevel(mapLayer.maximumScale())
                 if (maxLevel == 0):
                     maxLevel = 22
                     
@@ -115,11 +116,11 @@ class EKMapExporter:
             layer["SourceWorkspace"] = self._wrapSourceWorkspace(mapLayer)
         else:
             layer["SourceWorkspace"] = self._wrapSourceWorkspaceProvider(mapLayer)
-        layer["DestWorkspace"] = None # chưa cần quan tâm
-        layer["Config"] = None # chưa cần quan tâm
-        layer["Filter"] = None # chưa cần quan tâm
+        layer["DestWorkspace"] = None # ignore in this time
+        layer["Config"] = None # ignore in this time
+        layer["Filter"] = None # ignore in this time
         layer["Visible"] = childLayer.isVisible()
-        layer["BaseLayer"] = False # chưa support
+        layer["BaseLayer"] = False # not support
         
         return layer
 
@@ -133,11 +134,11 @@ class EKMapExporter:
 
     def _wrapFieldInfo(self, field, increment):
         fieldInfo = {}
-        fieldInfo["TableName"] = None # chưa cần quan tâm
+        fieldInfo["TableName"] = None # ignore in this time
         fieldInfo["FieldName"] = field.name()
         fieldInfo["FieldSource"] = field.name() # lấy giống field name
         fieldInfo["DisplayName"] = field.displayName()
-        fieldInfo["DataType"] = convertDataType(field.typeName())
+        fieldInfo["DataType"] = eKConverter.convertDataType(field.typeName())
         if field.length() == 1:
             fieldInfo["Length"] = 10
         else:
@@ -153,7 +154,7 @@ class EKMapExporter:
 
         if mapLayer.providerType() == 'wms':
             sourceWorkspace["ConnectString"] = urllib.parse.unquote(params["url"])
-            sourceWorkspace["Provider"] = convertExtensionToName(params["type"])
+            sourceWorkspace["Provider"] = eKConverter.convertExtensionToName(params["type"])
 
         #elif mapLayer.providerType() == 'wms':
         #    sourceWorkspace["ConnectString"] = params["url"]
@@ -169,7 +170,7 @@ class EKMapExporter:
         baseSplit = basename.split(".")
 
         ext = baseSplit[-1].lower()
-        provider = convertExtensionToName(baseSplit[-1])
+        provider = eKConverter.convertExtensionToName(baseSplit[-1])
         if provider is None:
             provider = 'SQLite'
             ext = 'sqlite'
@@ -214,9 +215,9 @@ class EKMapExporter:
         minLevel = 0
         maxLevel = 22
         if settings.scaleVisibility:
-            minLevel = convertScaleToLevel(self.iface, settings.minimumScale)
+            minLevel = eKConverter.convertScaleToLevel(settings.minimumScale)
             if (settings.maximumScale != 0):
-                maxLevel = convertScaleToLevel(self.iface, settings.maximumScale)
+                maxLevel = eKConverter.convertScaleToLevel(settings.maximumScale)
 
         labelStyle["level"] = str(minLevel) + "," + str(maxLevel)
         
@@ -290,10 +291,17 @@ class EKMapExporter:
     def _wrapSymbolLayers(self, symbol, rule):
         self._geoType = symbol.type()
 
+        # TEST
+        testStyle = []
+
         for symbolLayer in symbol.symbolLayers():
+            # TEST
+            test = SymbolLayerFactory.getLayerParser(symbolLayer)
+            if test is not None:
+                testStyle.extend(test.parse())
+
             properties = symbolLayer.properties()
 
-            outputDpi = self.iface.mapCanvas().mapSettings().outputDpi()
             if self._geoType == 0: # áp dụng riêng với POINT
                 name = str(properties.get("name"))
                 if name is None:
@@ -306,7 +314,7 @@ class EKMapExporter:
                     rule["externalGraphic"] = "_externalGraphic" + "\\" +external
                 # else name is not path
                 else:
-                    rule["graphicName"] = convertGraphicNameToVieType(name)
+                    rule["graphicName"] = eKConverter.convertGraphicNameToVieType(name)
                 
                 if properties.get("imageFile") is not None:
                     imageFile = properties.get("imageFile")
@@ -317,16 +325,16 @@ class EKMapExporter:
                 size = properties.get("size")
                 if size is not None:
                     sizeUnit = properties.get("size_unit")
-                    rule["graphicHeight"] = int(convertUnitToPixel(outputDpi, size, sizeUnit))
-                    rule["graphicWidth"] = int(convertUnitToPixel(outputDpi, size, sizeUnit))
+                    rule["graphicHeight"] = int(eKConverter.convertUnitToPixel(size, sizeUnit))
+                    rule["graphicWidth"] = int(eKConverter.convertUnitToPixel(size, sizeUnit))
                 
                 offset = properties.get("offset")
                 if offset is not None:
                     offsets = offset.split(",")
                     if len(offsets) == 2:
                         offsetUnit = properties.get("offset_unit")
-                        rule["graphicXOffset"] = int(convertUnitToPixel(outputDpi, offsets[0], offsetUnit))
-                        rule["graphicYOffset"] = int(convertUnitToPixel(outputDpi, offsets[1], offsetUnit))
+                        rule["graphicXOffset"] = int(eKConverter.convertUnitToPixel(offsets[0], offsetUnit))
+                        rule["graphicYOffset"] = int(eKConverter.convertUnitToPixel(offsets[1], offsetUnit))
             
             if self._geoType == 1: # Là line
                 # Line của QGIS không có stroke
@@ -334,10 +342,10 @@ class EKMapExporter:
                 outlineWidth = properties.get("line_width")
                 if outlineWidth is not None:
                     outlineWidthUnit = properties.get("line_width_unit")
-                    rule["strokeWidth"] = int(convertUnitToPixel(outputDpi, outlineWidth, outlineWidthUnit))
+                    rule["strokeWidth"] = int(eKConverter.convertUnitToPixel(outlineWidth, outlineWidthUnit))
                 rule["strokeColor"] = symbolLayer.color().name()
                 rule["strokeOpacity"] = symbolLayer.color().alpha() / 255
-                rule["strokeDashstyle"] = convertStrokeTypeToVieType(properties.get("line_style"))
+                rule["strokeDashstyle"] = eKConverter.convertStrokeTypeToVieType(properties.get("line_style"))
             else: # Là point hoặc polygon
                 rule["fillColor"] = symbolLayer.color().name()
                 rule["fillOpacity"] = symbolLayer.color().alpha() / 255 
@@ -345,10 +353,15 @@ class EKMapExporter:
                 outlineWidth = properties.get("outline_width")
                 if outlineWidth is not None:
                     outlineWidthUnit = properties.get("outline_width_unit")
-                    rule["strokeWidth"] = int(convertUnitToPixel(outputDpi, outlineWidth, outlineWidthUnit))
+                    rule["strokeWidth"] = int(eKConverter.convertUnitToPixel(outlineWidth, outlineWidthUnit))
                 rule["strokeColor"] = symbolLayer.strokeColor().name()
                 rule["strokeOpacity"] = symbolLayer.strokeColor().alpha() / 255
-                rule["strokeDashstyle"] = convertStrokeTypeToVieType(properties.get("outline_style"))
+                rule["strokeDashstyle"] = eKConverter.convertStrokeTypeToVieType(properties.get("outline_style"))
+        
+        # TEST
+        if testStyle is not None:
+            QgsMessageLog.logMessage(json.dumps(testStyle), 'eKMapServer Publisher', level=Qgis.Info)
+
         return rule
 
     def _wrapFilterExpression(self, filterExpression):
