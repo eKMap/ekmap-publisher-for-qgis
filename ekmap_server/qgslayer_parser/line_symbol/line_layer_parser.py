@@ -11,7 +11,8 @@ class LineLayerParser(SymbolLayerParser):
             outlineWidthUnit = self.properties.get('line_width_unit')
             self.outlineWidth = int(eKConverter.convertUnitToPixel(self.outlineWidth, outlineWidthUnit))
         
-    def initLineStyle(self, lineLayer, lineConfig):
+    def initBaseLineConfig(self, lineLayer):
+        lineConfig = self.DEFAULT_LINE_CONFIG
         lineConfig['line-width'] = self.outlineWidth
         lineConfig['line-color'] = lineLayer.color().name()
         lineConfig['line-opacity'] = lineLayer.color().alpha() / 255
@@ -21,5 +22,4 @@ class LineLayerParser(SymbolLayerParser):
         lineConfig['line-cap'] = self.properties.get('capstyle')
         lineConfig['line-join'] = self.properties.get('joinstyle')
 
-        style = self.exportLineLayerFormat(lineConfig)
-        self.styles.append(style)
+        return lineConfig

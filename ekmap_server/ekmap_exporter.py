@@ -5,7 +5,7 @@ from .qgslayer_parser.symbol_layer_factory import SymbolLayerFactory
 
 import os.path, json, uuid, urllib.parse
 
-class EKMapExporter:
+class eKMapExporter:
     def __init__(self, iface, instance):
         eKConverter.IFACE = iface
         self.instance = instance
@@ -97,13 +97,13 @@ class EKMapExporter:
                 layer["Type"] = "Feature layer"
                 style = self._wrapStyle(mapLayer) # gọi trước để lấy giá trị GeoType
                 layer["GeoType"] = eKConverter.convertLayerToGeoType(self._geoType)
-                if style is not None:
-                    style = json.dumps(style)
+                # if style is not None:
+                #     style = json.dumps(style)
                 layer["Style"] = style
                 styleLabel = self._wrapStyleLabel(mapLayer)
-                if styleLabel is not None:
-                    styleLabel = json.dumps(styleLabel)
-                layer["StyleLabel"] = styleLabel
+                # if styleLabel is not None:
+                #     styleLabel = json.dumps(styleLabel)
+                # layer["StyleLabel"] = styleLabel
 
                 minLevel = eKConverter.convertScaleToLevel(mapLayer.minimumScale())
                 maxLevel = eKConverter.convertScaleToLevel(mapLayer.maximumScale())
@@ -112,7 +112,7 @@ class EKMapExporter:
                     
                 layer["MinLevel"] = minLevel
                 layer["MaxLevel"] = maxLevel
-            layer["FieldInfo"] = self._wrapFieldInfos(mapLayer)
+            # layer["FieldInfo"] = self._wrapFieldInfos(mapLayer)
             layer["SourceWorkspace"] = self._wrapSourceWorkspace(mapLayer)
         else:
             layer["SourceWorkspace"] = self._wrapSourceWorkspaceProvider(mapLayer)
@@ -150,15 +150,11 @@ class EKMapExporter:
 
     def _wrapSourceWorkspaceProvider(self, mapLayer):
         sourceWorkspace = {}
-        params = EKMapCommonHelper.urlParamToMap(mapLayer.publicSource())
+        params = eKMapCommonHelper.urlParamToMap(mapLayer.publicSource())
 
         if mapLayer.providerType() == 'wms':
             sourceWorkspace["ConnectString"] = urllib.parse.unquote(params["url"])
             sourceWorkspace["Provider"] = eKConverter.convertExtensionToName(params["type"])
-
-        #elif mapLayer.providerType() == 'wms':
-        #    sourceWorkspace["ConnectString"] = params["url"]
-        #    sourceWorkspace["Provider"] = params["type"]
 
         return sourceWorkspace
 
@@ -232,137 +228,80 @@ class EKMapExporter:
             return self._wrapSingleSymbolStyle(mapLayer.renderer())
         if mapLayer.renderer().type() == 'categorizedSymbol':
             return self._wrapCategoriesSymbolStyle(mapLayer.renderer())
-        return EKMapCommonHelper.getDefaultStyleBaseOnGeoType(mapLayer.type().value)
+        return eKMapCommonHelper.getDefaultStyleBaseOnGeoType(mapLayer.type().value)
 
     def _wrapSingleSymbolStyle(self, singleSymbolRenderer):
         self._geoType = singleSymbolRenderer.symbol().type()
 
-        return {
-            "rules": [],
-            "defaultStyle": self._wrapSymbolLayers(singleSymbolRenderer.symbol(),{})
-        }
+        return self._wrapSymbolLayers(singleSymbolRenderer.symbol())
         
     def _wrapRuleBasedStyle(self, ruleBasedRenderer):
-        style = {}
-        rules = []
+        # style = {}
+        # rules = []
+        # for childRule in ruleBasedRenderer.rootRule().children():
+        #     rule = {}
+
+        #     # Get title
+        #     rule["title"] = childRule.label()
+
+        #     # Get symbol
+        #     rule = self._wrapSymbolLayers(childRule.symbol(), rule)
+
+        #     # Get filter
+        #     if childRule.filter() is not None:
+        #         expression = childRule.filter().expression()
+        #         rule["filter"] = self._wrapFilterExpression(expression)
+        #         rules.append(rule)
+        #     else:
+        #         style["defaultStyle"] = rule
+
+        # style["rules"] = rules
+        # return style
+        styles = []
         for childRule in ruleBasedRenderer.rootRule().children():
-            rule = {}
-
-            # Get title
-            rule["title"] = childRule.label()
-
-            # Get symbol
-            rule = self._wrapSymbolLayers(childRule.symbol(), rule)
-
-            # Get filter
+            styleLayers = self._wrapSymbolLayers(childRule.symbol())
             if childRule.filter() is not None:
                 expression = childRule.filter().expression()
-                rule["filter"] = self._wrapFilterExpression(expression)
-                rules.append(rule)
-            else:
-                style["defaultStyle"] = rule
-
-        style["rules"] = rules
-        return style
+                for styleLayer in styleLayers:
+                    styleLayer['filter'] = self._wrapFilterExpression(expression)
+            styles.extend(styleLayers) 
+        return styles
 
     def _wrapCategoriesSymbolStyle(self, renderer):
-        style = {}
-        rules = []
-        selectedProperty = renderer.classAttribute()
-        for category in renderer.categories():
-            rule = {}
-            # Get symbol
-            rule = self._wrapSymbolLayers(category.symbol(), rule)
-            # Get filter
-            if category.label().strip():
-                rule["title"] = category.label()
-                rule["filter"] = {
-                    "property": selectedProperty,
-                    "type": "=",
-                    "value": category.value()
-                }
-                rules.append(rule)
-            else:
-                style["defaultStyle"] = rule
+        # style = {}
+        # rules = []
+        # selectedProperty = renderer.classAttribute()
+        # for category in renderer.categories():
+        #     rule = {}
+        #     # Get symbol
+        #     rule = self._wrapSymbolLayers(category.symbol())
+        #     # Get filter
+        #     if category.label().strip():
+        #         rule["title"] = category.label()
+        #         rule["filter"] = {
+        #             "property": selectedProperty,
+        #             "type": "=",
+        #             "value": category.value()
+        #         }
+        #         rules.append(rule)
+        #     else:
+        #         style["defaultStyle"] = rule
 
-        style["rules"] = rules
-        return style
+        # style["rules"] = rules
+        # return style
+        return "Not implemented yet"
 
-    def _wrapSymbolLayers(self, symbol, rule):
+    def _wrapSymbolLayers(self, symbol):
         self._geoType = symbol.type()
 
-        # TEST
-        testStyle = []
-
+        styleLayers = []
         for symbolLayer in symbol.symbolLayers():
-            # TEST
-            test = SymbolLayerFactory.getLayerParser(symbolLayer)
-            if test is not None:
-                testStyle.extend(test.parse())
+            styleLayer = SymbolLayerFactory.getLayerParser(symbolLayer)
+            if styleLayer is not None:
+                styleLayers.extend(styleLayer.parse())
 
-            properties = symbolLayer.properties()
-
-            if self._geoType == 0: # áp dụng riêng với POINT
-                name = str(properties.get("name"))
-                if name is None:
-                    rule["graphicName"] = ""
-                
-                # if name is path
-                elif os.path.isfile(name):
-                    self.externalGraphics.append(name)
-                    external = os.path.basename(name)
-                    rule["externalGraphic"] = "_externalGraphic" + "\\" +external
-                # else name is not path
-                else:
-                    rule["graphicName"] = eKConverter.convertGraphicNameToVieType(name)
-                
-                if properties.get("imageFile") is not None:
-                    imageFile = properties.get("imageFile")
-                    self.externalGraphics.append(imageFile)
-                    external = os.path.basename(imageFile)
-                    rule["externalGraphic"] = "_externalGraphic" + "\\" + external
-
-                size = properties.get("size")
-                if size is not None:
-                    sizeUnit = properties.get("size_unit")
-                    rule["graphicHeight"] = int(eKConverter.convertUnitToPixel(size, sizeUnit))
-                    rule["graphicWidth"] = int(eKConverter.convertUnitToPixel(size, sizeUnit))
-                
-                offset = properties.get("offset")
-                if offset is not None:
-                    offsets = offset.split(",")
-                    if len(offsets) == 2:
-                        offsetUnit = properties.get("offset_unit")
-                        rule["graphicXOffset"] = int(eKConverter.convertUnitToPixel(offsets[0], offsetUnit))
-                        rule["graphicYOffset"] = int(eKConverter.convertUnitToPixel(offsets[1], offsetUnit))
-            
-            if self._geoType == 1: # Là line
-                # Line của QGIS không có stroke
-                # Lấy fill color của QGIS thay stroke color của EKMap
-                outlineWidth = properties.get("line_width")
-                if outlineWidth is not None:
-                    outlineWidthUnit = properties.get("line_width_unit")
-                    rule["strokeWidth"] = int(eKConverter.convertUnitToPixel(outlineWidth, outlineWidthUnit))
-                rule["strokeColor"] = symbolLayer.color().name()
-                rule["strokeOpacity"] = symbolLayer.color().alpha() / 255
-                rule["strokeDashstyle"] = eKConverter.convertStrokeTypeToVieType(properties.get("line_style"))
-            else: # Là point hoặc polygon
-                rule["fillColor"] = symbolLayer.color().name()
-                rule["fillOpacity"] = symbolLayer.color().alpha() / 255 
-
-                outlineWidth = properties.get("outline_width")
-                if outlineWidth is not None:
-                    outlineWidthUnit = properties.get("outline_width_unit")
-                    rule["strokeWidth"] = int(eKConverter.convertUnitToPixel(outlineWidth, outlineWidthUnit))
-                rule["strokeColor"] = symbolLayer.strokeColor().name()
-                rule["strokeOpacity"] = symbolLayer.strokeColor().alpha() / 255
-                rule["strokeDashstyle"] = eKConverter.convertStrokeTypeToVieType(properties.get("outline_style"))
-        
-        # TEST
-        if testStyle is not None:
-            QgsMessageLog.logMessage(json.dumps(testStyle), 'eKMapServer Publisher', level=Qgis.Info)
-
-        return rule
+        QgsMessageLog.logMessage(json.dumps(styleLayers), 'eKMapServer Publisher', level=Qgis.Info)
+        return styleLayers
 
     def _wrapFilterExpression(self, filterExpression):
         filterObj = {}

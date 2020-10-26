@@ -68,7 +68,7 @@ DEFAULT_STYLE_LABEL = {
     "level": "0,22"
 }
 
-class EKMapCommonHelper:
+class eKMapCommonHelper:
 
     def getDefaultStyleBaseOnGeoType(geoType):
         switcher = {
