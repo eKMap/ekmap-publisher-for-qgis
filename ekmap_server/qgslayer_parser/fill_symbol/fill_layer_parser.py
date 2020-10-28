@@ -10,4 +10,4 @@ class FillLayerParser(SymbolLayerParser):
         self.outlineWidth = self.properties.get('outline_width', 0)
         if self.outlineWidth != 0:
             outlineWidthUnit = self.properties.get('outline_width_unit')
-            self.outlineWidth = int(eKConverter.convertUnitToPixel(self.outlineWidth, outlineWidthUnit))
+            self.outlineWidth = float(eKConverter.convertUnitToPixel(self.outlineWidth, outlineWidthUnit))

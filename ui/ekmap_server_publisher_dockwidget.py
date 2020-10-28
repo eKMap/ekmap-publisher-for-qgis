@@ -8,7 +8,7 @@ from .login_dialog import LoginDialog
 from .export_dialog import ExportMapDialog
 from .publish_dialog import PublishDialog
 from ..ekmap_server.ekmap_common import *
-from ..ekmap_server.ekmap_exporter import EKMapExporter
+from ..ekmap_server.ekmap_exporter import eKMapExporter
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'ekmap_server_publisher_dockwidget_base.ui'))
@@ -72,7 +72,7 @@ class EKMapServerPublisherDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         currentServer = self.setting.value(SETTING_SERVER, "")
         inputServer = self.txtServer.text().strip()
         if currentServer != inputServer:
-            if EKMapCommonHelper.isConnectionAvailable(inputServer):
+            if eKMapCommonHelper.isConnectionAvailable(inputServer):
                 self.setting.setValue(SETTING_SERVER, inputServer)
                 self.btnLogin.setEnabled(True)
                 self.logoutEvent()
@@ -181,7 +181,7 @@ class EKMapServerPublisherDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.progressBar.setValue(10)
 
         # Xuất thông tin MapInfo
-        exporter = EKMapExporter(self.iface, QgsProject.instance())
+        exporter = eKMapExporter(self.iface, QgsProject.instance())
         with open(filename, 'w') as outputFile:
             exportResult = exporter.exportMapInfo()
             exportResult["Title"] = self.mapName
@@ -226,7 +226,7 @@ class EKMapServerPublisherDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             
         # Xóa file thừa
         if isClear: # Trường hợp Publish thì sẽ chưa xóa vội mà để xử lý cuối cùng mới thực hiện
-            EKMapCommonHelper.cleanTempDir()
+            eKMapCommonHelper.cleanTempDir()
         shutil.rmtree(self.exportDst + "/MapPackage")
         self.progressBar.setValue(100)
 

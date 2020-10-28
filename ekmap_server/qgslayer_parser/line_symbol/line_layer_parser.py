@@ -9,10 +9,10 @@ class LineLayerParser(SymbolLayerParser):
         self.outlineWidth = self.properties.get('line_width', 1)
         if self.outlineWidth != 0:
             outlineWidthUnit = self.properties.get('line_width_unit')
-            self.outlineWidth = int(eKConverter.convertUnitToPixel(self.outlineWidth, outlineWidthUnit))
+            self.outlineWidth = float(eKConverter.convertUnitToPixel(self.outlineWidth, outlineWidthUnit))
         
     def initBaseLineConfig(self, lineLayer):
-        lineConfig = self.DEFAULT_LINE_CONFIG
+        lineConfig = {}
         lineConfig['line-width'] = self.outlineWidth
         lineConfig['line-color'] = lineLayer.color().name()
         lineConfig['line-opacity'] = lineLayer.color().alpha() / 255

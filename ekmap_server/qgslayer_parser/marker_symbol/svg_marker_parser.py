@@ -8,8 +8,9 @@ class SvgMarkerParser(MarkerLayerParser):
 
         # Except image information like RasterMarker
         # this marker contains some paint information to re-draw
-        _shapeConfig = self.DEFAULT_MARKER_CONFIG
-        _shapeConfig['marker-name'] = 'svg-image'
+        shapeConfig = self.DEFAULT_MARKER_CONFIG
+        shapeConfig['marker-name'] = 'svg-image'
         # Get the image path        
-        _shapeConfig['marker-image'] = self.properties.get('name')
-        self.initMarkerStyle(svgMarkerParser, _shapeConfig)
+        shapeConfig['marker-image'] = self.properties.get('name')
+        self.externalGraphic.append(self.properties.get('name'))
+        self.initMarkerStyle(svgMarkerParser, shapeConfig)

@@ -6,6 +6,7 @@ from .qgslayer_parser.symbol_layer_factory import SymbolLayerFactory
 import os.path, json, uuid, urllib.parse
 
 class eKMapExporter:
+    
     def __init__(self, iface, instance):
         eKConverter.IFACE = iface
         self.instance = instance
@@ -85,18 +86,19 @@ class eKMapExporter:
         mapLayer = childLayer.layer()
         layer = {}
         layer["Title"] = mapLayer.name()
-        layer["Code"] = self.code
-        layer["Description"] = mapLayer.abstract()
+        # layer["Code"] = self.code
+        # layer["Description"] = mapLayer.abstract()
 
         if (mapLayer.providerType() == "ogr" 
             or mapLayer.providerType() == "delimitedtext"
             or mapLayer.providerType() == "spatialite"):
             if mapLayer.renderer() is None: # table
-                layer["Type"] = "Table"
+                # layer["Type"] = "Table"
+                print('Temp comment')
             else:
-                layer["Type"] = "Feature layer"
+                # layer["Type"] = "Feature layer"
                 style = self._wrapStyle(mapLayer) # gọi trước để lấy giá trị GeoType
-                layer["GeoType"] = eKConverter.convertLayerToGeoType(self._geoType)
+                # layer["GeoType"] = eKConverter.convertLayerToGeoType(self._geoType)
                 # if style is not None:
                 #     style = json.dumps(style)
                 layer["Style"] = style
@@ -116,11 +118,11 @@ class eKMapExporter:
             layer["SourceWorkspace"] = self._wrapSourceWorkspace(mapLayer)
         else:
             layer["SourceWorkspace"] = self._wrapSourceWorkspaceProvider(mapLayer)
-        layer["DestWorkspace"] = None # ignore in this time
-        layer["Config"] = None # ignore in this time
-        layer["Filter"] = None # ignore in this time
+        # layer["DestWorkspace"] = None # ignore in this time
+        # layer["Config"] = None # ignore in this time
+        # layer["Filter"] = None # ignore in this time
         layer["Visible"] = childLayer.isVisible()
-        layer["BaseLayer"] = False # not support
+        # layer["BaseLayer"] = False # not support
         
         return layer
 
@@ -183,9 +185,9 @@ class eKMapExporter:
 
         sourceWorkspace["ConnectString"] = mapLayer.id() + "\\" + basename # Nếu còn trùng thì đổi self.code
         sourceWorkspace["Provider"] = provider # tách extension
-        sourceWorkspace["TableName"] = None 
+        # sourceWorkspace["TableName"] = None 
 
-        sourceWorkspace["Projection"] = "4326" # tạm fix cứng
+        # sourceWorkspace["Projection"] = "4326" # tạm fix cứng
         return sourceWorkspace
 
     def _wrapStyleLabel(self, mapLayer):
@@ -260,10 +262,20 @@ class eKMapExporter:
         styles = []
         for childRule in ruleBasedRenderer.rootRule().children():
             styleLayers = self._wrapSymbolLayers(childRule.symbol())
+
+            # Set filter
             if childRule.filter() is not None:
                 expression = childRule.filter().expression()
                 for styleLayer in styleLayers:
                     styleLayer['filter'] = self._wrapFilterExpression(expression)
+
+            # Set active
+            isVisible = 'visible'
+            if not childRule.active():
+                isVisible = 'none'
+            for styleLayer in styleLayers:
+                styleLayer['layout']['visibility'] = isVisible
+
             styles.extend(styleLayers) 
         return styles
 
@@ -289,7 +301,31 @@ class eKMapExporter:
 
         # style["rules"] = rules
         # return style
-        return "Not implemented yet"
+        styles = []
+        selectedProperty = renderer.classAttribute()
+        for category in renderer.categories():
+            styleLayers = self._wrapSymbolLayers(category.symbol())
+            # Get filter
+            if category.label().strip():
+                for styleLayer in styleLayers:
+                    styleLayer['filter'] = [
+                        "==",
+                        [
+                            "get",
+                            selectedProperty,
+                        ],
+                        category.value()
+                    ]
+
+            # Set active
+            isVisible = 'visible'
+            if not category.renderState():
+                isVisible = 'none'
+            for styleLayer in styleLayers:
+                styleLayer['layout']['visibility'] = isVisible
+
+            styles.extend(styleLayers) 
+        return styles
 
     def _wrapSymbolLayers(self, symbol):
         self._geoType = symbol.type()
@@ -299,8 +335,8 @@ class eKMapExporter:
             styleLayer = SymbolLayerFactory.getLayerParser(symbolLayer)
             if styleLayer is not None:
                 styleLayers.extend(styleLayer.parse())
+                self.externalGraphics.extend(styleLayer.externalGraphic)
 
-        QgsMessageLog.logMessage(json.dumps(styleLayers), 'eKMapServer Publisher', level=Qgis.Info)
         return styleLayers
 
     def _wrapFilterExpression(self, filterExpression):
@@ -317,4 +353,11 @@ class eKMapExporter:
         # Giá trị có thể có khoảng trắng ở giữa
         # Bỏ đi dấu nháy ở đầu
         filterObj["value"] = " ".join(filterExps).replace("'","")
-        return filterObj
+        return [
+            "==",
+            [
+                "get",
+                filterObj["property"]
+            ],
+            filterObj["value"]
+        ]

@@ -26,4 +26,5 @@ class SimpleMarkerParser(MarkerLayerParser):
             
         _shapeConfig = self.DEFAULT_MARKER_CONFIG
         _shapeConfig['marker-name'] = _markerName
+        _shapeConfig['marker-image'] = None
         self.initMarkerStyle(simpleMarkerLayer, _shapeConfig)

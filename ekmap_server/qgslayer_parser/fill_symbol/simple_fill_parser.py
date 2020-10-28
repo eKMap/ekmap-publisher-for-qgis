@@ -6,14 +6,15 @@ class SimpleFillParser(FillLayerParser):
     def __init__(self, simpleFillLayer):
         super().__init__(simpleFillLayer)
 
-        fillConfig = self.DEFAULT_FILL_CONFIG
-        fillConfig['fill-color'] = simpleFillLayer.color().name()
-        fillConfig['fill-opacity'] = simpleFillLayer.color().alpha() / 255
+        if self.properties.get('style') == 'solid':
+            fillConfig = self.DEFAULT_FILL_CONFIG
+            fillConfig['fill-color'] = simpleFillLayer.color().name()
+            fillConfig['fill-opacity'] = simpleFillLayer.color().alpha() / 255
 
-        fillStyleLayer = self.exportFillLayerFormat(fillConfig)
-        self.styles.append(fillStyleLayer)
+            fillStyleLayer = self.exportFillLayerFormat(fillConfig)
+            self.styles.append(fillStyleLayer)
 
-        if self.outlineWidth != 0:
+        if self.outlineWidth != 0 and self.properties.get('outline_style') != 'no':
             lineConfig = self.DEFAULT_LINE_CONFIG
             lineConfig['line-width'] = self.outlineWidth
             lineConfig['line-join'] = self.properties.get('joinstyle')

@@ -24,6 +24,7 @@ class SymbolLayerParser:
 
     def __init__(self, symbolLayer):
         self.styles = []
+        self.externalGraphic = []
         self.properties = symbolLayer.properties()
 
     def parse(self):
