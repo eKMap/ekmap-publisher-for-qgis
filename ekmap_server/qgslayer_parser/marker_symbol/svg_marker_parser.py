@@ -12,5 +12,5 @@ class SvgMarkerParser(MarkerLayerParser):
         shapeConfig['marker-name'] = 'svg-image'
         # Get the image path        
         shapeConfig['marker-image'] = self.properties.get('name')
-        self.externalGraphic.append(self.properties.get('name'))
+        # self.externalGraphic.append(self.properties.get('name'))
         self.initMarkerStyle(svgMarkerParser, shapeConfig)

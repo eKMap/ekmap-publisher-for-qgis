@@ -12,19 +12,19 @@ class SimpleMarkerParser(MarkerLayerParser):
         super().__init__(simpleMarkerLayer)
 
         # Get the name of shape
-        _markerName = str(self.properties.get('name'))
+        markerName = str(self.properties.get('name'))
         # If the name of shape is empty
         # draw the default shape
-        if _markerName is None:
+        if markerName is None:
             # do something here
-            _markerName = 'circle'
+            markerName = 'circle'
         # Else, read the shape
         else:
             # Convert the shape of QGIS to shape of eKMap
             # If eKMap not support, default convert to CIRCLE
-            _markerName = eKConverter.convertGraphicNameToVieType(_markerName)
+            markerName = eKConverter.convertGraphicNameToVieType(markerName)
             
-        _shapeConfig = self.DEFAULT_MARKER_CONFIG
-        _shapeConfig['marker-name'] = _markerName
-        _shapeConfig['marker-image'] = None
-        self.initMarkerStyle(simpleMarkerLayer, _shapeConfig)
+        shapeConfig = self.DEFAULT_MARKER_CONFIG
+        shapeConfig['marker-name'] = markerName
+        shapeConfig['marker-image'] = None
+        self.initMarkerStyle(simpleMarkerLayer, shapeConfig)

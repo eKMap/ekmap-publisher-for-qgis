@@ -7,6 +7,21 @@ class eKConverter():
 
     IFACE = None
 
+    # Convert render unit value to unit name
+    # Refer: https://qgis.org/api/classQgsUnitTypes.html#ae04d6633d29996dbc2ab07e737a04adf
+    def convertRenderUnitValueToName(value):
+        switcher = {
+            '0': 'MM',
+            # '1': 'MapUnit', # Not supported
+            # '2': 'Pixel',
+            # '3': 'Percentage', # Not supported
+            '4': 'Point',
+            '5': 'Inches',
+            # '6': 'UnknownUnit', # Not supported
+            # '7': 'MetersInMapUnit', # Not supported
+        }
+        return switcher.get(str(value), 'Pixel')
+
     # Hàm đổi đơn vị về Pixel dựa vào hàm tính của GIS CLOUD
     def convertUnitToPixel(value, unit):
         scalePixel = eKConverter.IFACE.mapCanvas().mapSettings().outputDpi() / 72

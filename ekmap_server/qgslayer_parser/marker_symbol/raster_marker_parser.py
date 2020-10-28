@@ -13,5 +13,5 @@ class RasterMarkerParser(MarkerLayerParser):
         shapeConfig['marker-name'] = 'raster-image'
         # Get the image path        
         shapeConfig['marker-image'] = self.properties.get('imageFile')
-        self.externalGraphic.append(self.properties.get('imageFile'))
+        # self.externalGraphic.append(self.properties.get('imageFile'))
         self.initMarkerStyle(rasterMarkerLayer, shapeConfig)

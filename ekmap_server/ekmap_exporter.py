@@ -1,9 +1,10 @@
 from qgis.core import QgsProject, Qgis, QgsRuleBasedRenderer, QgsVectorFileWriter, QgsMessageLog
+from PyQt5.QtCore import QSize
 from .ekmap_converter import eKConverter
 from .ekmap_common import *
 from .qgslayer_parser.symbol_layer_factory import SymbolLayerFactory
 
-import os.path, json, uuid, urllib.parse
+import os.path, json, uuid, urllib.parse, hashlib
 
 class eKMapExporter:
     
@@ -233,8 +234,7 @@ class eKMapExporter:
         return eKMapCommonHelper.getDefaultStyleBaseOnGeoType(mapLayer.type().value)
 
     def _wrapSingleSymbolStyle(self, singleSymbolRenderer):
-        self._geoType = singleSymbolRenderer.symbol().type()
-
+        # self._geoType = singleSymbolRenderer.symbol().type()
         return self._wrapSymbolLayers(singleSymbolRenderer.symbol())
         
     def _wrapRuleBasedStyle(self, ruleBasedRenderer):
@@ -334,8 +334,36 @@ class eKMapExporter:
         for symbolLayer in symbol.symbolLayers():
             styleLayer = SymbolLayerFactory.getLayerParser(symbolLayer)
             if styleLayer is not None:
-                styleLayers.extend(styleLayer.parse())
-                self.externalGraphics.extend(styleLayer.externalGraphic)
+                styles = styleLayer.parse()
+                
+                # Comment the old version
+                # styleLayers.extend(styleLayer.parse())
+
+                # This is updated version
+                # Case Marker, export image and generate symbol layer style
+                # instead of eKMarker layer style
+                # the eKMarker layer style used for generate style key to identify image
+                if symbolLayer.type() == 0:
+                    key = json.dumps(styles)
+                    key = hashlib.md5(key.encode()).hexdigest()
+                    sizeUnit = eKConverter.convertRenderUnitValueToName(symbol.sizeUnit())
+                    size = eKConverter.convertUnitToPixel(symbol.size(), sizeUnit)
+                    exportImagePath = TEMP_LOCATION + '/' + key + '.png'
+                    symbol.exportImage(exportImagePath, 'png', QSize(size, size))
+                    if os.path.isfile(exportImagePath):
+                        self.externalGraphics.append(exportImagePath)
+                        styleLayers.append({
+                            'type': 'ekmarker',
+                            'layout': {
+                                'marker-name': 'raster-image',
+                                'marker-image': 'D:/exo/Test2/_externalGraphic/' + key + '.png'
+                            }
+                        })
+                    #else:
+                    #    QgsMessageLog.logMessage(json.dumps(styles) + " is exported fail!", 'eKMapServer Publisher', level=Qgis.Info)
+                # Case Line and Polygon
+                else:
+                    styleLayers.extend(styleLayer.parse())
 
         return styleLayers
 

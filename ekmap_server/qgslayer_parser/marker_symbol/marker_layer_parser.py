@@ -10,12 +10,12 @@ class MarkerLayerParser(SymbolLayerParser):
         self.outlineWidth = self.properties.get('outline_width', 0)
         if self.outlineWidth != 0:
             outlineWidthUnit = self.properties.get('outline_width_unit')
-            self.outlineWidth = int(eKConverter.convertUnitToPixel(self.outlineWidth, outlineWidthUnit))
+            self.outlineWidth = float(eKConverter.convertUnitToPixel(self.outlineWidth, outlineWidthUnit))
 
         size = round(float(self.properties.get("size", 1)))
         if size is not None:
             sizeUnit = self.properties.get("size_unit")
-            size = int(eKConverter.convertUnitToPixel(size, sizeUnit))
+            size = float(eKConverter.convertUnitToPixel(size, sizeUnit))
 
         # size is equivalent to width
         self.width = size
