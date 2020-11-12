@@ -23,9 +23,9 @@ class SimpleLineParser(LineLayerParser):
             # and add to new dash array
             for dash in dashes:
                 # Convert to pixel
-                value = eKConverter.convertUnitToPixel(int(dash), customDashUnit)
+                value = eKConverter.convertUnitToPixel(float(dash), customDashUnit)
                 # Add to new dash array
-                dasharray.append(int(value))
+                dasharray.append(float(value))
             # Replace default dash style
             lineConfig['line-dasharray'] = dasharray
 

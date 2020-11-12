@@ -22,9 +22,11 @@ class eKConverter():
         }
         return switcher.get(str(value), 'Pixel')
 
-    # Hàm đổi đơn vị về Pixel dựa vào hàm tính của GIS CLOUD
+    # Convert to pixel method
+    # Refer: GIS CLOUD plugin
     def convertUnitToPixel(value, unit):
         scalePixel = eKConverter.IFACE.mapCanvas().mapSettings().outputDpi() / 72
+        # scalePixel = 96 / 72
 
         value = float(str(value))
         switcher = {
@@ -34,15 +36,16 @@ class eKConverter():
         }
         return switcher.get(unit, value)
 
-    # Hàm đổi scale sang level dựa vào hàm tính của GIS CLOUD
+    # Convert scale to zoom level method
+    # Refer: GIS CLOUD plugin
     def convertScaleToLevel(scale):
         level = 0
         physicalDpiX = eKConverter.IFACE.mainWindow().physicalDpiX()
         factor = physicalDpiX * eKConverter.MAX_SCALE_PER_PIXEL * eKConverter.INCHES_PER_METER
         if scale > 0:
             level = int(round(math.log((factor / scale), 2), 0))
-        # ở version ISQIS3 thì min/max để thứ tự như này
-        # ở QGis2 thì cần phải set ngược lại
+        # In version ISQIS3 min/max in this order
+        # In QGis2 it is reverse
         return level
 
     def convertStrokeTypeToVieType(strokeType):

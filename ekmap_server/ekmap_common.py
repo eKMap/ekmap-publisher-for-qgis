@@ -99,3 +99,14 @@ class eKMapCommonHelper:
                 result[paramSplit[0]] = paramSplit[1]
         
         return result
+
+    def rgbaToHex(rgba):
+        r,g,b,a = rgba.split(',')
+        colorR = int(r), int(g), int(b), int(a)
+        colorHex = '#{:02x}{:02x}{:02x}'.format(*colorR)
+        return colorHex
+
+    def getTransparentFromRGBA(rgba):
+        r,g,b,a = rgba.split(',')
+        transparent = int(a) / 255
+        return transparent

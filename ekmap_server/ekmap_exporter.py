@@ -3,6 +3,7 @@ from PyQt5.QtCore import QSize
 from .ekmap_converter import eKConverter
 from .ekmap_common import *
 from .qgslayer_parser.symbol_layer_factory import SymbolLayerFactory
+from .qgslabel_parser.simple_label_parser import SimpleLabelParser
 
 import os.path, json, uuid, urllib.parse, hashlib
 
@@ -99,14 +100,13 @@ class eKMapExporter:
             else:
                 # layer["Type"] = "Feature layer"
                 style = self._wrapStyle(mapLayer) # gọi trước để lấy giá trị GeoType
+                styleLabel = self._wrapStyleLabel(mapLayer)
+                if styleLabel is not None:
+                    style.append(styleLabel)
                 # layer["GeoType"] = eKConverter.convertLayerToGeoType(self._geoType)
                 # if style is not None:
                 #     style = json.dumps(style)
                 layer["Style"] = style
-                styleLabel = self._wrapStyleLabel(mapLayer)
-                # if styleLabel is not None:
-                #     styleLabel = json.dumps(styleLabel)
-                # layer["StyleLabel"] = styleLabel
 
                 minLevel = eKConverter.convertScaleToLevel(mapLayer.minimumScale())
                 maxLevel = eKConverter.convertScaleToLevel(mapLayer.maximumScale())
@@ -192,35 +192,15 @@ class eKMapExporter:
         return sourceWorkspace
 
     def _wrapStyleLabel(self, mapLayer):
-        if mapLayer.labeling() is None:
-            return None
-        elif mapLayer.labeling().type() != 'simple':
-            return DEFAULT_STYLE_LABEL
-        return self._wrapSimpleLabelStyle(mapLayer.labeling().settings())
+        # if mapLayer.labeling() is None:
+        #     return None
+        # elif mapLayer.labeling().type() != 'simple':
+        #     return DEFAULT_STYLE_LABEL
+        return self._wrapSimpleLabelStyle(mapLayer)
 
-    def _wrapSimpleLabelStyle(self, settings):
-        labelStyle = {}
-        labelStyle["field"] = settings.fieldName
-        labelStyle["labelXOffset"] = int(settings.xOffset)
-        labelStyle["labelYOffset"] = int(settings.yOffset)
-        labelStyle["fontName"] = settings.format().font().family()
-        labelStyle["fontSize"] = int(settings.format().size())
-        labelStyle["fontColor"] = settings.format().color().name()
-        labelStyle["fontStyle"] = settings.format().namedStyle()
-        labelStyle["strokeColor"] = settings.format().buffer().color().name()
-        labelStyle["strokeWidth"] = int(settings.format().buffer().size())
-        labelStyle["opacity"] = settings.format().opacity()
-
-        minLevel = 0
-        maxLevel = 22
-        if settings.scaleVisibility:
-            minLevel = eKConverter.convertScaleToLevel(settings.minimumScale)
-            if (settings.maximumScale != 0):
-                maxLevel = eKConverter.convertScaleToLevel(settings.maximumScale)
-
-        labelStyle["level"] = str(minLevel) + "," + str(maxLevel)
-        
-        return labelStyle
+    def _wrapSimpleLabelStyle(self, mapLayer):
+        labelLayer = SimpleLabelParser(mapLayer)
+        return labelLayer.read()
 
     def _wrapStyle(self, mapLayer):
         if mapLayer.renderer() is None: # table
@@ -238,27 +218,6 @@ class eKMapExporter:
         return self._wrapSymbolLayers(singleSymbolRenderer.symbol())
         
     def _wrapRuleBasedStyle(self, ruleBasedRenderer):
-        # style = {}
-        # rules = []
-        # for childRule in ruleBasedRenderer.rootRule().children():
-        #     rule = {}
-
-        #     # Get title
-        #     rule["title"] = childRule.label()
-
-        #     # Get symbol
-        #     rule = self._wrapSymbolLayers(childRule.symbol(), rule)
-
-        #     # Get filter
-        #     if childRule.filter() is not None:
-        #         expression = childRule.filter().expression()
-        #         rule["filter"] = self._wrapFilterExpression(expression)
-        #         rules.append(rule)
-        #     else:
-        #         style["defaultStyle"] = rule
-
-        # style["rules"] = rules
-        # return style
         styles = []
         for childRule in ruleBasedRenderer.rootRule().children():
             styleLayers = self._wrapSymbolLayers(childRule.symbol())
@@ -356,6 +315,8 @@ class eKMapExporter:
                             'type': 'ekmarker',
                             'layout': {
                                 'marker-name': 'raster-image',
+                                'marker-width': size,
+                                'marker-height': size,
                                 'marker-image': 'D:/exo/Test2/_externalGraphic/' + key + '.png'
                             }
                         })
