@@ -4,6 +4,7 @@ from .ekmap_converter import eKConverter
 from .ekmap_common import *
 from .qgslayer_parser.symbol_layer_factory import SymbolLayerFactory
 from .qgslabel_parser.simple_label_parser import SimpleLabelParser
+# from .filter_expression_parser.expression_reader import ExpressionReader
 
 import os.path, json, uuid, urllib.parse, hashlib
 
@@ -166,6 +167,7 @@ class eKMapExporter:
         
         source = mapLayer.publicSource()
         basename = os.path.basename(source)
+        # QgsMessageLog.logMessage(basename, 'eKMapServer Publisher', level=Qgis.Info)
         baseSplit = basename.split(".")
 
         ext = baseSplit[-1].lower()
@@ -174,8 +176,14 @@ class eKMapExporter:
             provider = 'SQLite'
             ext = 'sqlite'
             fileName = TEMP_LOCATION + '/' + mapLayer.name() + '.' + ext
+
+            # Change to bases name because multilayers might point to same source
+            # The basename of GDB has format like file.gdb|layername=...|....
+            basename = hashlib.md5(basename.encode()).hexdigest()
+            self.sourcePaths[basename] = fileName 
+
             basename = mapLayer.name() + '.' + ext
-            self.sourcePaths[mapLayer.id()] = fileName # Nếu còn trùng thì đổi self.code
+            # self.sourcePaths[mapLayer.id()] = fileName # Nếu còn trùng thì đổi self.code
 
             options = QgsVectorFileWriter.SaveVectorOptions()
             options.driverName = provider
@@ -187,8 +195,24 @@ class eKMapExporter:
         sourceWorkspace["ConnectString"] = mapLayer.id() + "\\" + basename # Nếu còn trùng thì đổi self.code
         sourceWorkspace["Provider"] = provider # tách extension
         # sourceWorkspace["TableName"] = None 
-
         # sourceWorkspace["Projection"] = "4326" # tạm fix cứng
+        for split in provider.strip().split('|'):
+            subsetSplit = split.split('subset=')
+            if len(subsetSplit) > 1:
+                sourceWorkspace["Filter"] = subsetSplit[1]
+                # expression = ExpressionReader.read(subsetSplit[1])
+                # if expression is not None:
+                #     sourceWorkspace["Filter"] = eval(expression[0])
+                # # If parse expression fail, 
+                # # the data would not be get
+                # else:
+                #     sourceWorkspace["Filter"] = ['!=', '1', '1']
+                # break
+            # TEMP
+            layerNameSplit = split.split('layername=')
+            if len(layerNameSplit) > 1:
+                sourceWorkspace["TableName"] = layerNameSplit[1]
+
         return sourceWorkspace
 
     def _wrapStyleLabel(self, mapLayer):

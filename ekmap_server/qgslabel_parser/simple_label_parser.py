@@ -48,7 +48,7 @@ class SimpleLabelParser():
             'text-halo-width': strokeWidth,
         }
         labelLayout = {
-            'text-font': fontName,
+            'text-font': [fontName],
             'text-field': '{' + field + '}',
             'text-size':  fontSize,
             'text-offset': [xOffset, yOffset]

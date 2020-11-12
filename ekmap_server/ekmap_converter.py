@@ -92,7 +92,7 @@ class eKConverter():
             "geojson": "GeoJSON",
             "xyz": "ZXY",
         }
-        return switcher.get(extension, extension)
+        return switcher.get(extension, None)
 
     def convertDataType(dataType):
         switcher = {
