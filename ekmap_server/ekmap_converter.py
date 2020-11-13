@@ -107,3 +107,17 @@ class eKConverter():
             "Logic": "bit",
         }
         return switcher.get(dataType, dataType)
+
+    def convertLabelPlacement(placementValue):
+        switcher = {
+            # 0: "around-point",
+            # 1: "over-point",
+            2: "line", # Parallel
+            # 3: "curved",
+            4: "point", # Horizontal
+            # 5: "free",
+            # 6: "ordered-position-around-point",
+            # 7: "perimeter-curved",
+            # 8: "outside-polygon",
+        }
+        return switcher.get(placementValue, "point")

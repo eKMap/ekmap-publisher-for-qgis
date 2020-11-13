@@ -191,16 +191,6 @@ class EKMapServerPublisherDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         # Lấy data source
         os.makedirs(TEMP_LOCATION, exist_ok=True)
         directoryOutput = os.path.dirname(filename)
-        # for sourcePath in exporter.sourcePaths:
-        #     dirSource = os.path.dirname(sourcePath)
-        #     sourceBaseName = os.path.basename(sourcePath).split(".")[0]
-        #     filePaths = self._getFilesPathInDirWithSameName(dirSource, sourceBaseName)
-        #     for filePath in filePaths:
-        #         basename = os.path.basename(filePath)
-        #         baseWithoutExtension = basename.split(".")[0]
-        #         destPath = directoryOutput + "/" + baseWithoutExtension + "/" + basename
-        #         os.makedirs(os.path.dirname(destPath), exist_ok = True)
-        #         shutil.copyfile(filePath, destPath)
         for layerCode, layerSource in exporter.sourcePaths.items():
             dirSource = os.path.dirname(layerSource)
             sourceBaseName = os.path.basename(layerSource).split(".")[0]
@@ -208,13 +198,13 @@ class EKMapServerPublisherDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             for filePath in filePaths:
                 basename = os.path.basename(filePath)
                 baseWithoutExtension = basename.split(".")[0]
-                destPath = directoryOutput + "/" + layerCode + "/" + basename
+                destPath = directoryOutput + "/" + 'source' + "/" + basename
                 os.makedirs(os.path.dirname(destPath), exist_ok = True)
                 shutil.copyfile(filePath, destPath)
         self.progressBar.setValue(40)
 
         # Lấy external graphic
-        dstExternalGraphic = directoryOutput + "/_externalGraphic"
+        dstExternalGraphic = directoryOutput + "/sprite"
         os.makedirs(dstExternalGraphic, exist_ok = True)
         for externalGraphic in exporter.externalGraphics:
             shutil.copy2(externalGraphic, dstExternalGraphic)

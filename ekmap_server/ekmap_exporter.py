@@ -89,24 +89,23 @@ class eKMapExporter:
         mapLayer = childLayer.layer()
         layer = {}
         layer["Title"] = mapLayer.name()
-        # layer["Code"] = self.code
-        # layer["Description"] = mapLayer.abstract()
+        layer["Code"] = self.code
+        layer["Description"] = mapLayer.abstract()
 
         if (mapLayer.providerType() == "ogr" 
             or mapLayer.providerType() == "delimitedtext"
             or mapLayer.providerType() == "spatialite"):
             if mapLayer.renderer() is None: # table
-                # layer["Type"] = "Table"
-                print('Temp comment')
+                layer["Type"] = "Table"
             else:
-                # layer["Type"] = "Feature layer"
+                layer["Type"] = "Feature layer"
                 style = self._wrapStyle(mapLayer) # gọi trước để lấy giá trị GeoType
                 styleLabel = self._wrapStyleLabel(mapLayer)
                 if styleLabel is not None:
                     style.append(styleLabel)
-                # layer["GeoType"] = eKConverter.convertLayerToGeoType(self._geoType)
-                # if style is not None:
-                #     style = json.dumps(style)
+                layer["GeoType"] = eKConverter.convertLayerToGeoType(self._geoType)
+                if style is not None:
+                    style = json.dumps(style)
                 layer["Style"] = style
 
                 minLevel = eKConverter.convertScaleToLevel(mapLayer.minimumScale())
@@ -116,7 +115,7 @@ class eKMapExporter:
                     
                 layer["MinLevel"] = minLevel
                 layer["MaxLevel"] = maxLevel
-            # layer["FieldInfo"] = self._wrapFieldInfos(mapLayer)
+            layer["FieldInfo"] = self._wrapFieldInfos(mapLayer)
             layer["SourceWorkspace"] = self._wrapSourceWorkspace(mapLayer)
         else:
             layer["SourceWorkspace"] = self._wrapSourceWorkspaceProvider(mapLayer)
@@ -152,6 +151,7 @@ class eKMapExporter:
         fieldInfo["Sorter"] = increment # tăng dần
         return fieldInfo
 
+    # For ZXY or some datasource pass by URL
     def _wrapSourceWorkspaceProvider(self, mapLayer):
         sourceWorkspace = {}
         params = eKMapCommonHelper.urlParamToMap(mapLayer.publicSource())
@@ -162,56 +162,28 @@ class eKMapExporter:
 
         return sourceWorkspace
 
+    # Convert all the datasource type to SQLite
+    # Using the export function of QGIS
     def _wrapSourceWorkspace(self, mapLayer):
         sourceWorkspace = {}
         
         source = mapLayer.publicSource()
-        basename = os.path.basename(source)
-        # QgsMessageLog.logMessage(basename, 'eKMapServer Publisher', level=Qgis.Info)
-        baseSplit = basename.split(".")
+        keySource = hashlib.md5(source.encode()).hexdigest()
 
-        ext = baseSplit[-1].lower()
-        provider = eKConverter.convertExtensionToName(baseSplit[-1])
-        if provider is None:
-            provider = 'SQLite'
-            ext = 'sqlite'
-            fileName = TEMP_LOCATION + '/' + mapLayer.name() + '.' + ext
+        ext = 'sqlite'
+        provider = 'SQLite'
+        basename = keySource + '.' + ext
+        fileName = TEMP_LOCATION + '/' + basename
 
-            # Change to bases name because multilayers might point to same source
-            # The basename of GDB has format like file.gdb|layername=...|....
-            basename = hashlib.md5(basename.encode()).hexdigest()
-            self.sourcePaths[basename] = fileName 
-
-            basename = mapLayer.name() + '.' + ext
-            # self.sourcePaths[mapLayer.id()] = fileName # Nếu còn trùng thì đổi self.code
-
-            options = QgsVectorFileWriter.SaveVectorOptions()
-            options.driverName = provider
-            options.fileEncoding = "UTF-8"
-            QgsVectorFileWriter.writeAsVectorFormatV2(mapLayer, fileName, self.instance.transformContext(), options)
-        else:
-            self.sourcePaths[mapLayer.id()] = source # Nếu còn trùng thì đổi self.code
-
-        sourceWorkspace["ConnectString"] = mapLayer.id() + "\\" + basename # Nếu còn trùng thì đổi self.code
-        sourceWorkspace["Provider"] = provider # tách extension
-        # sourceWorkspace["TableName"] = None 
-        # sourceWorkspace["Projection"] = "4326" # tạm fix cứng
-        for split in provider.strip().split('|'):
-            subsetSplit = split.split('subset=')
-            if len(subsetSplit) > 1:
-                sourceWorkspace["Filter"] = subsetSplit[1]
-                # expression = ExpressionReader.read(subsetSplit[1])
-                # if expression is not None:
-                #     sourceWorkspace["Filter"] = eval(expression[0])
-                # # If parse expression fail, 
-                # # the data would not be get
-                # else:
-                #     sourceWorkspace["Filter"] = ['!=', '1', '1']
-                # break
-            # TEMP
-            layerNameSplit = split.split('layername=')
-            if len(layerNameSplit) > 1:
-                sourceWorkspace["TableName"] = layerNameSplit[1]
+        self.sourcePaths[keySource] = fileName 
+        options = QgsVectorFileWriter.SaveVectorOptions()
+        options.driverName = provider
+        options.fileEncoding = "UTF-8"
+        QgsVectorFileWriter.writeAsVectorFormatV2(mapLayer, fileName, self.instance.transformContext(), options)
+        
+        sourceWorkspace['ConnectString'] = 'source' + '\\' + basename
+        sourceWorkspace['Provider'] = provider
+        sourceWorkspace['TableName'] = keySource
 
         return sourceWorkspace
 
@@ -263,42 +235,47 @@ class eKMapExporter:
         return styles
 
     def _wrapCategoriesSymbolStyle(self, renderer):
-        # style = {}
-        # rules = []
-        # selectedProperty = renderer.classAttribute()
-        # for category in renderer.categories():
-        #     rule = {}
-        #     # Get symbol
-        #     rule = self._wrapSymbolLayers(category.symbol())
-        #     # Get filter
-        #     if category.label().strip():
-        #         rule["title"] = category.label()
-        #         rule["filter"] = {
-        #             "property": selectedProperty,
-        #             "type": "=",
-        #             "value": category.value()
-        #         }
-        #         rules.append(rule)
-        #     else:
-        #         style["defaultStyle"] = rule
-
-        # style["rules"] = rules
-        # return style
         styles = []
         selectedProperty = renderer.classAttribute()
+
+        # Find else conditions:
+        categoryDumps = renderer.dump().split('\n')
+        otherValues = []
+        for categoryDump in categoryDumps:
+            lineSplit = categoryDump.split('::')
+            if len(lineSplit) > 1 and lineSplit[0] != '':
+                otherValues.append(lineSplit[0])
+        elseFilter = [
+            "!",
+            [
+                "in",
+                [
+                    "get",
+                    renderer.classAttribute()
+                ],
+                [
+                    "literal",
+                    otherValues
+                ]
+            ]
+        ]
+
         for category in renderer.categories():
             styleLayers = self._wrapSymbolLayers(category.symbol())
             # Get filter
-            if category.label().strip():
-                for styleLayer in styleLayers:
-                    styleLayer['filter'] = [
-                        "==",
-                        [
-                            "get",
-                            selectedProperty,
-                        ],
-                        category.value()
-                    ]
+            dummyInfos = category.dump().split('::')
+            currentFilter = elseFilter
+            if dummyInfos[0] != '':
+                currentFilter = [
+                    "==",
+                    [
+                        "get",
+                        selectedProperty,
+                    ],
+                    category.value()
+                ]
+            for styleLayer in styleLayers:
+                styleLayer['filter'] = currentFilter
 
             # Set active
             isVisible = 'visible'

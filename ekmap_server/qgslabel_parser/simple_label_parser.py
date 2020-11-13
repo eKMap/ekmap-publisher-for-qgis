@@ -41,6 +41,10 @@ class SimpleLabelParser():
         # convert the width to pixel
         strokeWidth = eKConverter.convertUnitToPixel(value = strokeWidth, unit = strokeWidthUnit)
 
+        # TEMP
+        placement = self.settings.placement
+        placement = eKConverter.convertLabelPlacement(placement)
+
         # Export information here
         labelPaint = {
             'text-color': fontColor,
@@ -51,7 +55,8 @@ class SimpleLabelParser():
             'text-font': [fontName],
             'text-field': '{' + field + '}',
             'text-size':  fontSize,
-            'text-offset': [xOffset, yOffset]
+            'text-offset': [xOffset, yOffset],
+            'symbol-placement': placement,
         }
         return {
             'type': 'symbol',
