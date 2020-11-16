@@ -9,6 +9,7 @@ from .export_dialog import ExportMapDialog
 from .publish_dialog import PublishDialog
 from ..ekmap_server.ekmap_common import *
 from ..ekmap_server.ekmap_exporter import eKMapExporter
+from ..ekmap_server.sprite_generator import SpriteGenerator
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'ekmap_server_publisher_dockwidget_base.ui'))
@@ -208,6 +209,7 @@ class EKMapServerPublisherDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         os.makedirs(dstExternalGraphic, exist_ok = True)
         for externalGraphic in exporter.externalGraphics:
             shutil.copy2(externalGraphic, dstExternalGraphic)
+        SpriteGenerator.generate(dstExternalGraphic)
         self.progressBar.setValue(50)
 
         # Nén package
