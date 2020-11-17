@@ -118,7 +118,7 @@ class EKMapServerPublisherDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
         except Exception as e:
             QtWidgets.QMessageBox.about(self, "Message", "Export fail! " + str(e))
-            QgsMessageLog.logMessage(str(e), 'EKMapPublisher', level=Qgis.Info)
+            QgsMessageLog.logMessage(str(e), 'eKMapPublisher', level=Qgis.Info)
 
         finally:
             self.outProgressState()
@@ -188,6 +188,8 @@ class EKMapServerPublisherDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             exportResult["Title"] = self.mapName
             outputFile.write(json.dumps(exportResult, ensure_ascii = False))
         self.progressBar.setValue(30)
+
+        QgsMessageLog.logMessage(str(exporter.totalStyle), 'eKMapPublisher', level=Qgis.Info)
 
         # Lấy data source
         os.makedirs(TEMP_LOCATION, exist_ok=True)

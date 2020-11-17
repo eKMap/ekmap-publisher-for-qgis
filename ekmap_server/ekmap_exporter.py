@@ -16,7 +16,7 @@ class eKMapExporter:
         self.sourcePaths = {}
         self.externalGraphics = []
         self.layerSorter = 0
-        self.code = '';
+        self.code = ''
 
     def exportMapInfo(self):
         mapInfo = {}
