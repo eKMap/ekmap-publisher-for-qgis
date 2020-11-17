@@ -34,8 +34,8 @@ class SpriteGenerator:
             }
             bigImage.paste(image, (pointer, 0))
             pointer += image.size[0]
-            imageName = image.filename.split('.')[0].split('/')[1]
-            sprites[image.filename] = sprite
+            imageName = image.filename.split('.')[0].split('/')[-1]
+            sprites[imageName] = sprite
 
         # Save
         f = open(path + '/sprite.json','w')

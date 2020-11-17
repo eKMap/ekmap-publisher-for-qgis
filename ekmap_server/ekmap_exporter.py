@@ -1,4 +1,4 @@
-from qgis.core import QgsProject, Qgis, QgsRuleBasedRenderer, QgsVectorFileWriter, QgsMessageLog
+from qgis.core import QgsProject, Qgis, QgsRuleBasedRenderer, QgsApplication, QgsMessageLog
 from PyQt5.QtCore import QSize
 from .ekmap_converter import eKConverter
 from .ekmap_common import *
@@ -6,7 +6,7 @@ from .qgslayer_parser.symbol_layer_factory import SymbolLayerFactory
 from .qgslabel_parser.simple_label_parser import SimpleLabelParser
 # from .filter_expression_parser.expression_reader import ExpressionReader
 
-import os.path, json, uuid, urllib.parse, hashlib
+import os.path, json, uuid, urllib.parse, hashlib, subprocess
 
 class eKMapExporter:
     
@@ -17,6 +17,8 @@ class eKMapExporter:
         self.externalGraphics = []
         self.layerSorter = 0
         self.code = ''
+        self.sourceFilter = ''
+        self.ogr2ogr = QgsApplication.prefixPath().rstrip('apps/qgis') + '/bin/ogr2ogr.exe'
 
     def exportMapInfo(self):
         mapInfo = {}
@@ -121,7 +123,7 @@ class eKMapExporter:
             layer["SourceWorkspace"] = self._wrapSourceWorkspaceProvider(mapLayer)
         # layer["DestWorkspace"] = None # ignore in this time
         # layer["Config"] = None # ignore in this time
-        # layer["Filter"] = None # ignore in this time
+        layer["Filter"] = self.sourceFilter
         layer["Visible"] = childLayer.isVisible()
         # layer["BaseLayer"] = False # not support
         
@@ -166,24 +168,36 @@ class eKMapExporter:
     # Using the export function of QGIS
     def _wrapSourceWorkspace(self, mapLayer):
         sourceWorkspace = {}
+        self.sourceFilter = ''
         
-        source = mapLayer.publicSource()
-        keySource = hashlib.md5(source.encode()).hexdigest()
+        publicSource = mapLayer.publicSource()
+        # In case GDB, source contains '|' character
+        # Or source has filter also contains
+        # Others do not contain 
+        publicSourceSplit = publicSource.split('|')
+        source = publicSourceSplit[0]
+        tableName = os.path.basename(source).split('.')[0]
 
         ext = 'sqlite'
         provider = 'SQLite'
-        basename = keySource + '.' + ext
-        fileName = TEMP_LOCATION + '/' + basename
+        basename = tableName + '.' + ext
 
-        self.sourcePaths[keySource] = fileName 
-        options = QgsVectorFileWriter.SaveVectorOptions()
-        options.driverName = provider
-        options.fileEncoding = "UTF-8"
-        QgsVectorFileWriter.writeAsVectorFormatV2(mapLayer, fileName, self.instance.transformContext(), options)
+        for sourceSplit in publicSourceSplit:
+            if 'layername=' in sourceSplit:
+                tableName = sourceSplit.split('layername=')[1]
+            elif 'subset=' in sourceSplit:
+                self.sourceFilter = sourceSplit.split('subset=')[1]
+
+        keySource = hashlib.md5(source.encode()).hexdigest()
+        if keySource not in self.sourcePaths:
+            fileName = TEMP_LOCATION + '/' + basename
+            self.sourcePaths[keySource] = fileName
+            command = [self.ogr2ogr, '-f', 'SQLite', fileName, source]
+            subprocess.call(command)
         
         sourceWorkspace['ConnectString'] = 'source' + '\\' + basename
         sourceWorkspace['Provider'] = provider
-        sourceWorkspace['TableName'] = keySource
+        sourceWorkspace['TableName'] = tableName
 
         return sourceWorkspace
 
@@ -295,14 +309,6 @@ class eKMapExporter:
             styleLayer = SymbolLayerFactory.getLayerParser(symbolLayer)
             if styleLayer is not None:
                 styles = styleLayer.parse()
-                
-                # Comment the old version
-                # styleLayers.extend(styleLayer.parse())
-
-                # This is updated version
-                # Case Marker, export image and generate symbol layer style
-                # instead of eKMarker layer style
-                # the eKMarker layer style used for generate style key to identify image
                 if symbolLayer.type() == 0:
                     key = json.dumps(styles)
                     key = hashlib.md5(key.encode()).hexdigest()
@@ -313,12 +319,9 @@ class eKMapExporter:
                     if os.path.isfile(exportImagePath):
                         self.externalGraphics.append(exportImagePath)
                         styleLayers.append({
-                            'type': 'ekmarker',
+                            'type': 'symbol',
                             'layout': {
-                                'marker-name': 'raster-image',
-                                'marker-width': size,
-                                'marker-height': size,
-                                'marker-image': 'D:/exo/Test2/_externalGraphic/' + key + '.png'
+                                'icon-image': key
                             }
                         })
                     #else:

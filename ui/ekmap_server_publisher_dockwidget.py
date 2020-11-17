@@ -189,8 +189,6 @@ class EKMapServerPublisherDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             outputFile.write(json.dumps(exportResult, ensure_ascii = False))
         self.progressBar.setValue(30)
 
-        QgsMessageLog.logMessage(str(exporter.totalStyle), 'eKMapPublisher', level=Qgis.Info)
-
         # Lấy data source
         os.makedirs(TEMP_LOCATION, exist_ok=True)
         directoryOutput = os.path.dirname(filename)
