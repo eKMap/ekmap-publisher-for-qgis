@@ -6,7 +6,7 @@
 name=eKMap Server Publisher
 qgisMinimumVersion=3.0
 description=Publisher plugin for eKMap Server
-version=1.2.2
+version=2.0.0
 author=eKGIS
 email=dev@ekgis.com.vn
 
