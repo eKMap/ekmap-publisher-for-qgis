@@ -26,7 +26,7 @@ class SpriteGenerator:
         for image in images:
             sprite = {
                 'width': image.size[0],
-                'heigth': image.size[1],
+                'height': image.size[1],
                 'x': pointer,
                 'y': 0,
                 'pixelRatio': 1,
