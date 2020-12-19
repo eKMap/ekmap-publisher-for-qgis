@@ -25,7 +25,7 @@ class SimpleLabelParser():
         xOffset = float(self.settings.xOffset)
         yOffset = float(self.settings.yOffset)
         
-        fontName = labelFormat.font().family()
+        fontName = 'Open Sans Regular,Arial Unicode MS Regular' #labelFormat.font().family()
         fontColor = labelFormat.color().name()
         fontStyle = labelFormat.namedStyle()
 
@@ -53,7 +53,7 @@ class SimpleLabelParser():
         }
         labelLayout = {
             'text-font': [fontName],
-            'text-field': '{' + field + '}',
+            'text-field': '["get","' + field + '"]',
             'text-size':  fontSize,
             'text-offset': [xOffset, yOffset],
             'symbol-placement': placement,
