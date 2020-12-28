@@ -1,4 +1,5 @@
 from ..ekmap_converter import eKConverter
+import re
 
 class SimpleLabelParser():
 
@@ -22,6 +23,10 @@ class SimpleLabelParser():
         labelFormat = self.settings.format()
 
         field = self.settings.fieldName
+        finds = re.findall(r"\((.*?)\)", field)
+        if (len(finds) == 1):
+            field = finds[0]
+
         xOffset = float(self.settings.xOffset)
         yOffset = float(self.settings.yOffset)
         
