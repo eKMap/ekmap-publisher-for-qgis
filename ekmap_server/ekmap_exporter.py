@@ -105,7 +105,7 @@ class eKMapExporter:
                 styleLabel = self._wrapStyleLabel(mapLayer)
                 if styleLabel is not None:
                     # style.append(styleLabel)
-                    styleLabel = json.dump(styleLabel)
+                    styleLabel = json.dumps(styleLabel)
                     layer["StyleLabel"] = styleLabel
                 layer["GeoType"] = eKConverter.convertLayerToGeoType(self._geoType)
                 if style is not None:
