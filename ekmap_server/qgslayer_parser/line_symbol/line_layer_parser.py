@@ -19,7 +19,7 @@ class LineLayerParser(SymbolLayerParser):
         lineStyle = self.properties.get("line_style")
         lineConfig['line-dasharray'] = eKConverter.convertStrokeTypeToVieType(lineStyle)
 
-        lineConfig['line-cap'] = self.properties.get('capstyle')
-        lineConfig['line-join'] = self.properties.get('joinstyle')
+        lineConfig['line-cap'] = eKConverter.convertLineCap(self.properties.get('capstyle'))
+        lineConfig['line-join'] = eKConverter.convertLineJoin(self.properties.get('joinstyle'))
 
         return lineConfig

@@ -121,3 +121,19 @@ class eKConverter():
             # 8: "outside-polygon",
         }
         return switcher.get(placementValue, "point")
+
+    def convertLineJoin(lineJoin):
+        switcher = {
+            'miter': 'miter',
+            'round': 'round',
+            'bevel': 'bevel'
+        }
+        return switcher.get(lineJoin, 'miter')
+
+    def convertLineCap(lineCap):
+        switcher = {
+            'flat': 'butt',
+            'round': 'round',
+            'square': 'square'
+        }
+        return switcher.get(lineCap, 'butt')
