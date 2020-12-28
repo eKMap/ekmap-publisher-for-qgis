@@ -53,7 +53,7 @@ class SimpleLabelParser():
         }
         labelLayout = {
             'text-font': [fontName],
-            'text-field': '["get","' + field + '"]',
+            'text-field': ["get", field],
             'text-size':  fontSize,
             'text-offset': [xOffset, yOffset],
             'symbol-placement': placement,

@@ -50,11 +50,10 @@ class SymbolLayerParser:
 
 
     def exportLineLayerFormat(self, lineConfig):
-        return {
+        result = {
             'type': 'line',
             'paint': {
                 'line-color': lineConfig['line-color'],
-                'line-dasharray': lineConfig['line-dasharray'],
                 'line-width': lineConfig['line-width'],
                 'line-opacity': lineConfig['line-opacity'],
             },
@@ -63,6 +62,11 @@ class SymbolLayerParser:
                 'line-join': lineConfig['line-join'],
             },
         }
+        
+        lineDashArray = lineConfig['line-dasharray'],
+        if (lineDashArray is not None):
+            result['paint']['line-dasharray'] = lineDashArray
+        return result
 
     def exportFillLayerFormat(self, fillConfig):
         return {
