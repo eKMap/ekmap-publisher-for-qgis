@@ -104,11 +104,13 @@ class eKMapExporter:
                 style = self._wrapStyle(mapLayer) # gọi trước để lấy giá trị GeoType
                 styleLabel = self._wrapStyleLabel(mapLayer)
                 if styleLabel is not None:
-                    style.append(styleLabel)
+                    # style.append(styleLabel)
+                    styleLabel = json.dump(styleLabel)
+                    layer["StyleLabel"] = styleLabel
                 layer["GeoType"] = eKConverter.convertLayerToGeoType(self._geoType)
                 if style is not None:
                     style = json.dumps(style)
-                layer["Style"] = style
+                    layer["Style"] = style
 
                 minLevel = eKConverter.convertScaleToLevel(mapLayer.minimumScale())
                 maxLevel = eKConverter.convertScaleToLevel(mapLayer.maximumScale())
