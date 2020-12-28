@@ -61,7 +61,7 @@ class eKConverter():
         }
         # Old version
         # return switcher.get(strokeType, "solid")
-        return switcher.get(strokeType, None) # None = solid
+        return switcher.get(strokeType, []) # None = solid
 
     def convertGraphicNameToVieType(name):
         switcher = {

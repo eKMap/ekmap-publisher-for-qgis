@@ -12,7 +12,7 @@ class SymbolLayerParser:
         'line-cap': 'square',
         'line-join': 'bevel',
         'line-color': '#000000',
-        'line-dasharray': None,
+        'line-dasharray': [],
         'line-opacity': 1, # from 0 ~ 1
         'line-width': 1, # pixel
     }
@@ -63,8 +63,9 @@ class SymbolLayerParser:
             },
         }
         
-        lineDashArray = lineConfig['line-dasharray'],
-        if (lineDashArray is not None):
+        lineDashArray = lineConfig['line-dasharray']
+        length = len(lineDashArray)
+        if (length > 0 and length % 2 == 0):
             result['paint']['line-dasharray'] = lineDashArray
         return result
 
