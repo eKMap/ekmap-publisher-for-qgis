@@ -17,7 +17,7 @@ class SimpleLabelParser():
             # self.readBackground()
             # self.readPlacement()
 
-            return styleLabel
+            return [styleLabel]
 
     def readTextStyle(self):
         labelFormat = self.settings.format()
