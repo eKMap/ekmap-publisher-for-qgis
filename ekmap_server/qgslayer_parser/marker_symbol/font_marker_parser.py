@@ -7,4 +7,5 @@ class FontMarkerParser(MarkerLayerParser):
 
         shapeConfig = self.DEFAULT_MARKER_CONFIG
         shapeConfig['marker-name'] = 'font'
+        shapeConfig['marker-image'] = fontMarkerLayer.character()
         self.initMarkerStyle(fontMarkerLayer, shapeConfig)
