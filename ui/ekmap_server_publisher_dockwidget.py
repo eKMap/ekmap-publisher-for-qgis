@@ -8,7 +8,9 @@ from .login_dialog import LoginDialog
 from .export_dialog import ExportMapDialog
 from .publish_dialog import PublishDialog
 from ..ekmap_server.ekmap_common import *
+from ..ekmap_server.ekmap_connector import eKConnector
 from ..ekmap_server.ekmap_exporter import eKMapExporter
+from ..ekmap_server.ekmap_logger import eKLogger
 from ..ekmap_server.sprite_generator import SpriteGenerator
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -71,9 +73,9 @@ class EKMapServerPublisherDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
     def saveConfig(self):
         currentServer = self.setting.value(SETTING_SERVER, "")
-        inputServer = self.txtServer.text().strip()
+        inputServer = self.txtServer.text().strip().rstrip('/')
         if currentServer != inputServer:
-            if eKMapCommonHelper.isConnectionAvailable(inputServer):
+            if eKConnector.isConnectionAvailable(inputServer):
                 self.setting.setValue(SETTING_SERVER, inputServer)
                 self.btnLogin.setEnabled(True)
                 self.logoutEvent()
@@ -103,7 +105,8 @@ class EKMapServerPublisherDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.btnUpdateMap.setEnabled(False)
 
         self.btnLogin.show()
-        self.setting.setValue(SETTING_TOKEN, "")
+        # self.setting.setValue(SETTING_TOKEN, "")
+        self.setting.setValue(SETTING_COOKIES, "")
         self.setting.setValue(SETTING_USERNAME, "")
 
     def exportEvent(self):
@@ -238,9 +241,9 @@ class EKMapServerPublisherDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.taskExport(False)
 
         self.progressBar.setValue(50)
-        server = self.setting.value(SETTING_SERVER, "")
-        authorization = 'Bearer ' + self.setting.value(SETTING_TOKEN)
-        headers = {'Authorization': authorization}
+        # server = self.setting.value(SETTING_SERVER, "")
+        # authorization = 'Bearer ' + self.setting.value(SETTING_TOKEN)
+        # headers = {'Authorization': authorization}
 
         key = self.getKeyMapping()
         mappingDict = self.setting.value(SETTING_MAPPING, {})
@@ -249,33 +252,25 @@ class EKMapServerPublisherDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             
         # Upload
         self.lbMessage.setText('In process: Upload map')
-        uploadFile = json.loads(self._upload(server, headers).text)
+        uploadResult = eKConnector.upload(self.exportDst)
+        uploadFile = json.loads(uploadResult.text)['result']
         if isUpdated:
             uploadFile['ItemId'] = int(mappingDict[key])
         self.progressBar.setValue(80)
 
         # Publish
         self.lbMessage.setText('In process: Publish map')
-        result = self._publish(server, headers, uploadFile)
+        r = eKConnector.publish(uploadFile)
+        result = json.loads(r.text)
         self.progressBar.setValue(100)
-        if result.text.isdigit():
-            QtWidgets.QMessageBox.about(self, 'Message', 'Publish item successfully! \n' + self.mapName + ' (Id = ' + result.text + ')')
+        if result['success']:
+            mapId = result['result']
+            QtWidgets.QMessageBox.about(self, 'Message', 'Publish item successfully! \n' + self.mapName + ' (Id = ' + mapId + ')')
             # Store mapping
-            mappingDict[key] = result.text
+            mappingDict[key] = mapId
             self.setting.setValue(SETTING_MAPPING, mappingDict)
         else:
-            QtWidgets.QMessageBox.about(self, 'Message', 'Publish item fail! ' + result.text)
-
-    def _upload(self, server, headers):
-        url = server + API_UPLOAD
-        with open(self.exportDst + '/MapPackage.zip','rb') as file:
-            files = {'mapPackage': file}
-            return requests.post(url, headers = headers, files = files)
-
-    def _publish(self, server, headers, data):
-        url = server + API_PUBLISH
-        headers["Content-Type"] = "application/json"
-        return requests.put(url, headers = headers, json = data)
+            QtWidgets.QMessageBox.about(self, 'Message', 'Publish item fail! ' + r.text)
 
     def _isProjectContainsMapLayers(self):
         if len(QgsProject.instance().mapLayers()) == 0:

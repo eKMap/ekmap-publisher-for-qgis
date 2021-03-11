@@ -204,7 +204,7 @@ class EKMapServerPublisher:
             self.iface.removeToolBarIcon(action)
         # remove the toolbar
         del self.toolbar
-
+        
     #--------------------------------------------------------------------------
 
     def run(self):

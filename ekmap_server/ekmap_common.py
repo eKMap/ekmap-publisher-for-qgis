@@ -2,14 +2,19 @@ import os, shutil, requests
 
 TEMP_LOCATION = str(os.path.dirname(os.path.dirname(__file__))) + '/tmp'
 
+LOGGER_NAME = 'eKLogger'
+LOGGER_FORMAT = '%(asctime)s %(name)-12s %(levelname)-8s %(message)s'
+LOGGER_DIR = str(os.path.dirname(os.path.dirname(__file__))) + '/log.txt'
+
 SETTING_TOKEN = "ekmap_server_publisher/token"
+SETTING_COOKIES = "ekmap_server_publisher/cookies"
 SETTING_USERNAME = "ekmap_server_publisher/username"
 SETTING_SERVER = "ekmap_server_publisher/server"
 SETTING_MAPPING = "ekmap_server_publisher/mapping"
 
-API_LOGIN = "/api/TokenAuth/Authenticate"
-API_UPLOAD = "/gserver/rest/services/mapadmin/uploadpackage"
-API_PUBLISH = "/gserver/rest/services/mapadmin/publish"
+API_LOGIN = "/Account/Login"
+API_UPLOAD = "/ekmapserver/rest/services/MapPackage/upload"
+API_PUBLISH = "/ekmapserver/rest/services/MapPackage/publisher"
 
 DEFAULT_STYLE_POINT = {
     "defaultStyle": {
@@ -81,13 +86,6 @@ class eKMapCommonHelper:
     def cleanTempDir():
         shutil.rmtree(TEMP_LOCATION)
         os.mkdir(TEMP_LOCATION)
-
-    def isConnectionAvailable(url):
-        try:
-            request = requests.get(url, timeout = 5)
-            return True
-        except:
-            return False
 
     def urlParamToMap(urlParam):
         params = urlParam.split("&")
