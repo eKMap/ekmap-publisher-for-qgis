@@ -1,7 +1,0 @@
-<RCC>
-    <qresource prefix="/plugins/ekmap_server_publisher/ui">
-        <file>img/ekgislogo.png</file>
-        <file>img/icon.png</file>
-		<file>img/loader.gif</file>
-    </qresource>
-</RCC>
