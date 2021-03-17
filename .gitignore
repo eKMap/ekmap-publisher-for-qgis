@@ -1,0 +1,10 @@
+# Package Files #
+/scripts
+/tmp
+/test
+/README.txt
+/README.html
+*.pyc
+/.vs
+/log.txt
+.zip
