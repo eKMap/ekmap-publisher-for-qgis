@@ -84,7 +84,7 @@ class eKMapExporter:
         groupLayer = {}
         groupLayer["Title"] = node.name()
         groupLayer["Code"] = self.code
-        groupLayer["Type"] = "Group layer"
+        groupLayer["Type"] = "Group Layer"
         return groupLayer
 
     def _wrapFeatureLayer(self, childLayer):
@@ -100,7 +100,7 @@ class eKMapExporter:
             if mapLayer.renderer() is None: # table
                 layer["Type"] = "Table"
             else:
-                layer["Type"] = "Feature layer"
+                layer["Type"] = "Feature Layer"
                 style = self._wrapStyle(mapLayer) # gọi trước để lấy giá trị GeoType
                 styleLabel = self._wrapStyleLabel(mapLayer)
                 if styleLabel is not None:

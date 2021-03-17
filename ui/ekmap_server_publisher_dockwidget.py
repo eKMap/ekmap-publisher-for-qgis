@@ -29,6 +29,8 @@ class EKMapServerPublisherDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         if server != "":
             self.btnLogin.setEnabled(True)
             self.txtServer.setText(server)
+        else:
+            server = "http://server.ekgis.vn/"
 
         self.btnLogin.clicked.connect(self.openLoginDialog)
         self.btnLogout.clicked.connect(self.logoutEvent)
