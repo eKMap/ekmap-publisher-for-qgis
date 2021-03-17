@@ -99,7 +99,7 @@
        <string/>
       </property>
       <property name="placeholderText">
-       <string>https://ekmapserver.ekgis.vn</string>
+       <string>http://server.ekgis.vn</string>
       </property>
      </widget>
      <widget class="QToolButton" name="btnSaveConfig">
