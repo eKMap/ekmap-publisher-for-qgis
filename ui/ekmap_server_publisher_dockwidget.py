@@ -107,8 +107,8 @@ class EKMapServerPublisherDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.btnUpdateMap.setEnabled(False)
 
         self.btnLogin.show()
-        # self.setting.setValue(SETTING_TOKEN, "")
-        self.setting.setValue(SETTING_COOKIES, "")
+        self.setting.setValue(SETTING_TOKEN, "")
+        # self.setting.setValue(SETTING_COOKIES, "")
         self.setting.setValue(SETTING_USERNAME, "")
 
     def exportEvent(self):

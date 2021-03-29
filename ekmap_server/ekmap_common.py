@@ -12,7 +12,7 @@ SETTING_USERNAME = "ekmap_server_publisher/username"
 SETTING_SERVER = "ekmap_server_publisher/server"
 SETTING_MAPPING = "ekmap_server_publisher/mapping"
 
-API_LOGIN = "/Account/Login"
+API_LOGIN = "/api/TokenAuth/Authenticate"
 API_UPLOAD = "/ekmapserver/rest/services/MapPackage/upload"
 API_PUBLISH = "/ekmapserver/rest/services/MapPackage/publisher"
 

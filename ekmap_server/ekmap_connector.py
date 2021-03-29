@@ -25,11 +25,17 @@ class eKConnector():
     # Call LoginService
     def login(username, password):
         server = QSettings().value(SETTING_SERVER, "")
-        url = server + API_LOGIN + '?userNameOrEmailAddress=' + username + '&password=' + password
+        url = server + API_LOGIN
         try:
-            r = requests.post(url, verify = False)
+            r = requests.post(url, json= {
+                "userNameOrEmailAddress": username,
+                "password": password,
+            } ,verify = False)
             if eKConnector.isResponseSuccess(r.text):
-                QSettings().setValue(SETTING_COOKIES, r.cookies)
+                eKLogger.log(r.text)
+                result = json.loads(r.text)
+                # QSettings().setValue(SETTING_COOKIES, r.cookies)
+                QSettings().setValue(SETTING_TOKEN, result['result']['accessToken'])
                 QSettings().setValue(SETTING_USERNAME, username)
                 return True
             else:
@@ -43,11 +49,13 @@ class eKConnector():
     def upload(exportDst):
         server = QSettings().value(SETTING_SERVER, "")
         url = server + API_UPLOAD
+        authorization = 'Bearer ' + QSettings().value(SETTING_TOKEN, "")
+        headers = {'Authorization': authorization}
         try:
             with open(exportDst + '/MapPackage.zip','rb') as file:
                 files = {'mapPackage': file}
-                cookies = QSettings().value(SETTING_COOKIES, None)
-                r = requests.post(url, files = files, cookies = cookies, verify = False)
+                # cookies = QSettings().value(SETTING_COOKIES, None)
+                r = requests.post(url, files = files, headers = headers, verify = False)
                 return r
         except Exception as ex:
             eKLogger.log(str(ex))
@@ -57,10 +65,14 @@ class eKConnector():
     def publish(data):
         server = QSettings().value(SETTING_SERVER, "")
         url = server + API_PUBLISH
-        headers = {'Content-Type': 'application/json'}
+        authorization = 'Bearer ' + QSettings().value(SETTING_TOKEN, "")
+        headers = {
+            'Authorization': authorization,
+            'Content-Type': 'application/json'
+        }
         try:
-            cookies = QSettings().value(SETTING_COOKIES, None)
-            r = requests.post(url, headers = headers, cookies = cookies, json = data, verify = False)
+            # cookies = QSettings().value(SETTING_COOKIES, None)
+            r = requests.post(url, headers = headers, json = data, verify = False)
             return r
         except Exception as ex:
             eKLogger.log(str(ex))
