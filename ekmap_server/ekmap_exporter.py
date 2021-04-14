@@ -1,12 +1,13 @@
 from qgis.core import QgsProject, Qgis, QgsRuleBasedRenderer, QgsApplication, QgsMessageLog
 from PyQt5.QtCore import QSize
 from .ekmap_converter import eKConverter
+from .ekmap_logger import eKLogger
 from .ekmap_common import *
+from .datasource_helper import DatasourceHelper
 from .qgslayer_parser.symbol_layer_factory import SymbolLayerFactory
 from .qgslabel_parser.simple_label_parser import SimpleLabelParser
-# from .filter_expression_parser.expression_reader import ExpressionReader
 
-import os.path, json, uuid, urllib.parse, hashlib, subprocess
+import os.path, json, uuid, urllib.parse, hashlib
 
 class eKMapExporter:
     
@@ -173,16 +174,36 @@ class eKMapExporter:
         self.sourceFilter = ''
         
         publicSource = mapLayer.publicSource()
-        # In case GDB, source contains '|' character
-        # Or source has filter also contains
-        # Others do not contain 
+        # The FORMAT of public source : (source path) | (layername) | (subset)
+        # The source path has format: (path).(ext) 
+        # the (ext) => Type of datasource
         publicSourceSplit = publicSource.split('|')
-        source = publicSourceSplit[0]
-        tableName = os.path.basename(source).split('.')[0]
+        sourcePath = publicSourceSplit[0]
+        sourceBasename = os.path.basename(sourcePath).split('.')
+        tableName = sourceBasename[0]
+        ext = sourceBasename[-1]
 
-        ext = 'sqlite'
-        provider = 'SQLite'
+        # Hash the source path to make a key
+        keySource = hashlib.md5(sourcePath.encode()).hexdigest()
+        dstFolder = TEMP_LOCATION + '/source'
+        # Check key to make sure that not upload the same source
+        if keySource not in self.sourcePaths:
+            sourceHelper = DatasourceHelper(ext, tableName)
+            dstPath = sourceHelper.get(dstFolder, sourcePath)
+            self.sourcePaths[keySource] = dstPath
+            eKLogger.log(sourcePath + ' --- ' + dstFolder + ' --- ' + dstPath)
+
+        provider = eKConverter.convertExtensionToName(ext)
+        if provider is None:
+            ext = 'shp'
+            provider = 'Shapefile'
         basename = tableName + '.' + ext
+
+        if provider == 'Shapefile':
+            path = 'source' + '\\' + tableName + '\\' + basename
+        else:
+            path = 'source' + '\\' + basename
+        sourceWorkspace['ConnectString'] = path
 
         for sourceSplit in publicSourceSplit:
             if 'layername=' in sourceSplit:
@@ -190,14 +211,6 @@ class eKMapExporter:
             elif 'subset=' in sourceSplit:
                 self.sourceFilter = sourceSplit.split('subset=')[1]
 
-        keySource = hashlib.md5(source.encode()).hexdigest()
-        if keySource not in self.sourcePaths:
-            fileName = TEMP_LOCATION + '/' + basename
-            self.sourcePaths[keySource] = fileName
-            command = [self.ogr2ogr, '-f', 'SQLite', fileName, source]
-            subprocess.call(command)
-        
-        sourceWorkspace['ConnectString'] = 'source' + '\\' + basename
         sourceWorkspace['Provider'] = provider
         sourceWorkspace['TableName'] = tableName
 

@@ -30,7 +30,7 @@ class EKMapServerPublisherDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             self.btnLogin.setEnabled(True)
             self.txtServer.setText(server)
         else:
-            server = "http://server.ekgis.vn/"
+            server = "https://server.ekgis.vn/"
 
         self.btnLogin.clicked.connect(self.openLoginDialog)
         self.btnLogout.clicked.connect(self.logoutEvent)
@@ -108,7 +108,6 @@ class EKMapServerPublisherDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
         self.btnLogin.show()
         self.setting.setValue(SETTING_TOKEN, "")
-        # self.setting.setValue(SETTING_COOKIES, "")
         self.setting.setValue(SETTING_USERNAME, "")
 
     def exportEvent(self):
@@ -182,11 +181,11 @@ class EKMapServerPublisherDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         filename = self.exportDst + "/MapPackage/mapinfo.json"
         self.progressBar.setValue(0)
 
-        # Tạo thư mục xuất
+        # Create exported forlder
         os.makedirs(os.path.dirname(filename), exist_ok=True)
         self.progressBar.setValue(10)
 
-        # Xuất thông tin MapInfo
+        # Export MapInfo
         exporter = eKMapExporter(self.iface, QgsProject.instance())
         with open(filename, 'w') as outputFile:
             exportResult = exporter.exportMapInfo()
@@ -194,22 +193,21 @@ class EKMapServerPublisherDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             outputFile.write(json.dumps(exportResult, ensure_ascii = False))
         self.progressBar.setValue(30)
 
-        # Lấy data source
-        os.makedirs(TEMP_LOCATION, exist_ok=True)
+        # Get data source
         directoryOutput = os.path.dirname(filename)
+        dstPath = directoryOutput + "/" + 'source'
+        eKLogger.log('Get DATASOURCE')
         for layerCode, layerSource in exporter.sourcePaths.items():
-            dirSource = os.path.dirname(layerSource)
-            sourceBaseName = os.path.basename(layerSource).split(".")[0]
-            filePaths = self._getFilesPathInDirWithSameName(dirSource, sourceBaseName)
-            for filePath in filePaths:
-                basename = os.path.basename(filePath)
-                baseWithoutExtension = basename.split(".")[0]
-                destPath = directoryOutput + "/" + 'source' + "/" + basename
-                os.makedirs(os.path.dirname(destPath), exist_ok = True)
-                shutil.copyfile(filePath, destPath)
+            eKLogger.log(layerCode + ' --- ' + layerSource)
+            if os.path.isdir(layerSource):
+                foldername = os.path.basename(layerSource)
+                dstFolder = dstPath + '/' + foldername
+                shutil.copytree(layerSource, dstFolder)
+            else:
+                shutil.copy2(layerSource, dstPath)
         self.progressBar.setValue(40)
 
-        # Lấy external graphic
+        # Get external graphic
         dstExternalGraphic = directoryOutput + "/sprite"
         os.makedirs(dstExternalGraphic, exist_ok = True)
         for externalGraphic in exporter.externalGraphics:
@@ -217,11 +215,11 @@ class EKMapServerPublisherDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         SpriteGenerator.generate(dstExternalGraphic)
         self.progressBar.setValue(50)
 
-        # Nén package
+        # Compress package
         shutil.make_archive(self.exportDst + "/MapPackage", "zip", directoryOutput)
         self.progressBar.setValue(99)
             
-        # Xóa file thừa
+        # Delete temp file
         if isClear: # Trường hợp Publish thì sẽ chưa xóa vội mà để xử lý cuối cùng mới thực hiện
             eKMapCommonHelper.cleanTempDir()
         shutil.rmtree(self.exportDst + "/MapPackage")
@@ -243,9 +241,6 @@ class EKMapServerPublisherDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.taskExport(False)
 
         self.progressBar.setValue(50)
-        # server = self.setting.value(SETTING_SERVER, "")
-        # authorization = 'Bearer ' + self.setting.value(SETTING_TOKEN)
-        # headers = {'Authorization': authorization}
 
         key = self.getKeyMapping()
         mappingDict = self.setting.value(SETTING_MAPPING, {})
@@ -257,7 +252,7 @@ class EKMapServerPublisherDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         uploadResult = eKConnector.upload(self.exportDst)
         uploadFile = json.loads(uploadResult.text)['result']
         if isUpdated:
-            uploadFile['ItemId'] = int(mappingDict[key])
+            uploadFile['MapId'] = int(mappingDict[key])
         self.progressBar.setValue(80)
 
         # Publish
