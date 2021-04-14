@@ -91,6 +91,8 @@ class eKConverter():
             "shp": "Shapefile",
             "geojson": "GeoJSON",
             "xyz": "ZXY",
+            "gdb": "GDB",
+            "sqlite": "SQLite"
         }
         return switcher.get(extension, None)
 
