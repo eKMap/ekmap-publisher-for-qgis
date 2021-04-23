@@ -73,7 +73,7 @@ class eKConnector():
         try:
             eKLogger.log('Info data')
             eKLogger.log(uploadedPackageInfo)
-            r = requests.get(url, headers = headers, json = uploadedPackageInfo, verify = False)
+            r = requests.post(url, headers = headers, json = uploadedPackageInfo, verify = False)
             eKLogger.log('Info result')
             eKLogger.log(r.text)
             return r
