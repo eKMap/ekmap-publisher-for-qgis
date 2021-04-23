@@ -51,12 +51,32 @@ class eKConnector():
         url = server + API_UPLOAD
         authorization = 'Bearer ' + QSettings().value(SETTING_TOKEN, "")
         headers = {'Authorization': authorization}
+        eKLogger.log(url)
         try:
             with open(exportDst + '/MapPackage.zip','rb') as file:
                 files = {'mapPackage': file}
                 # cookies = QSettings().value(SETTING_COOKIES, None)
                 r = requests.post(url, files = files, headers = headers, verify = False)
                 return r
+        except Exception as ex:
+            eKLogger.log(str(ex))
+            return None
+
+    def info(uploadedPackageInfo):
+        server = QSettings().value(SETTING_SERVER, "")
+        url = server + API_INFO
+        authorization = 'Bearer ' + QSettings().value(SETTING_TOKEN, "")
+        headers = {
+            'Authorization': authorization,
+            'Content-Type': 'application/json'
+        }
+        try:
+            eKLogger.log('Info data')
+            eKLogger.log(uploadedPackageInfo)
+            r = requests.get(url, headers = headers, json = uploadedPackageInfo, verify = False)
+            eKLogger.log('Info result')
+            eKLogger.log(r.text)
+            return r
         except Exception as ex:
             eKLogger.log(str(ex))
             return None

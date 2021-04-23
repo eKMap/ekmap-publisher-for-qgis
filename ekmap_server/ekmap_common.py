@@ -13,8 +13,9 @@ SETTING_SERVER = "ekmap_server_publisher/server"
 SETTING_MAPPING = "ekmap_server_publisher/mapping"
 
 API_LOGIN = "/api/TokenAuth/Authenticate"
-API_UPLOAD = "/ekmapserver/rest/services/MapPackage/upload"
-API_PUBLISH = "/ekmapserver/rest/services/MapPackage/publisher"
+API_UPLOAD = "/ekmapserver/rest/services/Package/upload"
+API_INFO = "/ekmapserver/rest/services/Package/info"
+API_PUBLISH = "/ekmapserver/rest/services/Map/Publish"
 
 DEFAULT_STYLE_POINT = {
     "defaultStyle": {

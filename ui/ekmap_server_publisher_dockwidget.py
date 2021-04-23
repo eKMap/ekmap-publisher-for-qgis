@@ -250,7 +250,11 @@ class EKMapServerPublisherDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         # Upload
         self.lbMessage.setText('In process: Upload map')
         uploadResult = eKConnector.upload(self.exportDst)
-        uploadFile = json.loads(uploadResult.text)['result']
+        packageInfo = json.loads(uploadResult.text)['result']
+        infoResult = eKConnector.info(packageInfo)
+        uploadFile = json.loads(infoResult.text)['result']
+        uploadFile['packageInfo'] = packageInfo
+        eKLogger.log(uploadFile)
         if isUpdated:
             uploadFile['MapId'] = int(mappingDict[key])
         self.progressBar.setValue(80)
@@ -262,12 +266,12 @@ class EKMapServerPublisherDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.progressBar.setValue(100)
         if result['success']:
             mapId = result['result']
-            QtWidgets.QMessageBox.about(self, 'Message', 'Publish item successfully! \n' + self.mapName + ' (Id = ' + mapId + ')')
+            QtWidgets.QMessageBox.about(self, 'Message', 'Publish map successfully! \n' + self.mapName + ' (Id = ' + mapId + ')')
             # Store mapping
             mappingDict[key] = mapId
             self.setting.setValue(SETTING_MAPPING, mappingDict)
         else:
-            QtWidgets.QMessageBox.about(self, 'Message', 'Publish item fail! ' + r.text)
+            QtWidgets.QMessageBox.about(self, 'Message', 'Publish map fail! ' + r.text)
 
     def _isProjectContainsMapLayers(self):
         if len(QgsProject.instance().mapLayers()) == 0:
