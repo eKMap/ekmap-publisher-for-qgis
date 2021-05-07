@@ -182,25 +182,27 @@ class eKMapExporter:
         sourcePath = publicSourceSplit[0]
         sourceBasename = os.path.basename(sourcePath).split('.')
         tableName = sourceBasename[0]
-        ext = sourceBasename[-1]
+        provider = sourceBasename[-1]
+
+        eKLogger.log(sourceBasename)
 
         # Hash the source path to make a key
         keySource = hashlib.md5(sourcePath.encode()).hexdigest()
         dstFolder = TEMP_LOCATION + '/source'
         # Check key to make sure that not upload the same source
         if keySource not in self.sourcePaths:
-            sourceHelper = DatasourceHelper(ext, tableName)
+            sourceHelper = DatasourceHelper(provider, tableName)
             dstPath = sourceHelper.get(dstFolder, sourcePath)
             self.sourcePaths[keySource] = dstPath
             eKLogger.log(sourcePath + ' --- ' + dstFolder + ' --- ' + dstPath)
 
-        provider = eKConverter.convertExtensionToName(ext)
+        ext = eKConverter.getExtension(provider)
         if provider is None:
             ext = 'shp'
             provider = 'Shapefile'
         basename = tableName + '.' + ext
 
-        if provider == 'Shapefile':
+        if provider == 'shp':
             path = 'source' + '\\' + tableName + '\\' + basename
         else:
             path = 'source' + '\\' + basename

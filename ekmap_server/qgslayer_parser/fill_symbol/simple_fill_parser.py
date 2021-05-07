@@ -33,7 +33,7 @@ class SimpleFillParser(FillLayerParser):
         fillStyleLayer = self.exportFillLayerFormat(fillConfig)
         self.styles.append(fillStyleLayer)
 
-        if self.outlineWidth != 0 and self.properties.get('outline_style') != 'no':
+        if self.properties.get('outline_style') != 'no':
             lineConfig = self.DEFAULT_LINE_CONFIG
             lineConfig['line-width'] = self.outlineWidth
             lineConfig['line-join'] = self.properties.get('joinstyle')

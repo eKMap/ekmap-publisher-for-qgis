@@ -86,7 +86,13 @@ class eKConverter():
         }
         return switcher.get(type, None)
 
-    def convertExtensionToName(extension):
+    def getExtension(provider):
+        extension = {
+            'geojson': 'json'
+        }
+        return extension.get(provider, provider)
+
+    def convertExtensionToName(provider):
         switcher = {
             "shp": "Shapefile",
             "geojson": "GeoJSON",
@@ -94,7 +100,7 @@ class eKConverter():
             "gdb": "GDB",
             "sqlite": "SQLite"
         }
-        return switcher.get(extension, None)
+        return switcher.get(provider, None)
 
     def convertDataType(dataType):
         switcher = {

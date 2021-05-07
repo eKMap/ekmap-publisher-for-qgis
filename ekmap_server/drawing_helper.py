@@ -1,6 +1,6 @@
 from PIL import Image, ImageDraw
 
-DEFAULT_SIZE = 30
+DEFAULT_SIZE = 10
 
 class DrawingHelper:
 
