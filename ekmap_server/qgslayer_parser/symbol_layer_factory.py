@@ -7,7 +7,7 @@ from .fill_symbol.simple_fill_parser import SimpleFillParser
 
 class SymbolLayerFactory():
 
-    def getLayerParser(symbolLayer):
+    def getLayerParser(symbolLayer, exporter):
         layerType = symbolLayer.layerType()
         if layerType ==  'SimpleMarker':
             return SimpleMarkerParser(symbolLayer)
@@ -20,5 +20,5 @@ class SymbolLayerFactory():
         elif layerType == 'SimpleLine':
             return SimpleLineParser(symbolLayer)
         elif layerType == 'SimpleFill':
-            return SimpleFillParser(symbolLayer)
+            return SimpleFillParser(symbolLayer, exporter)
         return None

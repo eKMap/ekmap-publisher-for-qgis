@@ -15,6 +15,9 @@ class DatasourceHelper():
     def get(self, destPath, sourcePath):
         self.__destPath = destPath
         self.__sourcePath = sourcePath
+
+        os.makedirs(destPath, exist_ok=True)
+
         if self.__provider is None:
             methodName = '_getOther'
         else:
@@ -57,9 +60,12 @@ class DatasourceHelper():
         shutil.copyfile(self.__sourcePath, dstPath)
         return dstPath
     def _getOther(self):
+        eKLogger.log("Other")
         folderPath = self.__destPath + '/' + self.__fileName
+        eKLogger.log("Folder path")
         ogr2ogr = QgsApplication.prefixPath().rstrip('apps/qgis') + '/bin/ogr2ogr.exe'
         command = [ogr2ogr, '-f', 'ESRI Shapefile', folderPath, self.__sourcePath]
+        eKLogger.log(command)
         subprocess.call(command, shell=True)
         return folderPath
 

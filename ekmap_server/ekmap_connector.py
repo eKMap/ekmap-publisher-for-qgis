@@ -71,11 +71,7 @@ class eKConnector():
             'Content-Type': 'application/json'
         }
         try:
-            eKLogger.log('Info data')
-            eKLogger.log(uploadedPackageInfo)
             r = requests.post(url, headers = headers, json = uploadedPackageInfo, verify = False)
-            eKLogger.log('Info result')
-            eKLogger.log(r.text)
             return r
         except Exception as ex:
             eKLogger.log(str(ex))

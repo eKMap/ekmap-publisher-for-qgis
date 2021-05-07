@@ -1,18 +1,37 @@
 from .fill_layer_parser import FillLayerParser
+from ...ekmap_common import *
 from ...ekmap_converter import eKConverter
+from ...drawing_helper import DrawingHelper
+from ...ekmap_logger import eKLogger
+
+import hashlib
 
 class SimpleFillParser(FillLayerParser):
 
-    def __init__(self, simpleFillLayer):
+    def __init__(self, simpleFillLayer, exporter):
         super().__init__(simpleFillLayer)
 
-        if self.properties.get('style') == 'solid':
-            fillConfig = self.DEFAULT_FILL_CONFIG
-            fillConfig['fill-color'] = simpleFillLayer.color().name()
-            fillConfig['fill-opacity'] = simpleFillLayer.color().alpha() / 255
+        fillStyle = self.properties.get('style')
+        fillColor = simpleFillLayer.color().name()
+        fillConfig = {}
 
-            fillStyleLayer = self.exportFillLayerFormat(fillConfig)
-            self.styles.append(fillStyleLayer)
+        if fillStyle == 'solid':
+            fillConfig['fill-color'] = fillColor
+            fillConfig['fill-opacity'] = simpleFillLayer.color().alpha() / 255
+        else: # Fill with pattern
+            # Export pattern to image
+            fillStyle = self.__getPattern(fillStyle)
+            if fillStyle is not None:
+                patternName = fillStyle + fillColor
+                patternName = hashlib.md5(patternName.encode()).hexdigest()
+                dstPath = TEMP_LOCATION + '/' + patternName + '.png'
+                exporter.externalGraphics.append(dstPath)
+                DrawingHelper.drawLinePattern(fillStyle, fillColor, dstPath)
+                fillConfig['fill-pattern'] = patternName
+                fillConfig['fill-opacity'] = simpleFillLayer.color().alpha() / 255
+
+        fillStyleLayer = self.exportFillLayerFormat(fillConfig)
+        self.styles.append(fillStyleLayer)
 
         if self.outlineWidth != 0 and self.properties.get('outline_style') != 'no':
             lineConfig = self.DEFAULT_LINE_CONFIG
@@ -26,3 +45,21 @@ class SimpleFillParser(FillLayerParser):
 
             lineStyleLayer = self.exportLineLayerFormat(lineConfig)
             self.styles.append(lineStyleLayer)
+
+    def __getPattern(self, fillStyle):
+        pattern = {
+            'horizontal': 'Horizontal',
+            'vertical': 'Vertical',
+            'cross': 'Cross',
+            'b_diagonal': 'BDiagonal',
+            'f_diagonal': 'FDiagonal',
+            'diagonal_x': 'DiagonalX',
+            'dense1': None,
+            'dense2': None,
+            'dense3': None,
+            'dense4': None,
+            'dense5': None,
+            'dense6': None,
+            'dense7': None
+        }
+        return pattern.get(fillStyle, None)

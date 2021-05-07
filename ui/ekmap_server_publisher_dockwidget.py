@@ -196,9 +196,8 @@ class EKMapServerPublisherDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         # Get data source
         directoryOutput = os.path.dirname(filename)
         dstPath = directoryOutput + "/" + 'source'
-        eKLogger.log('Get DATASOURCE')
+        os.makedirs(dstPath, exist_ok=True)
         for layerCode, layerSource in exporter.sourcePaths.items():
-            eKLogger.log(layerCode + ' --- ' + layerSource)
             if os.path.isdir(layerSource):
                 foldername = os.path.basename(layerSource)
                 dstFolder = dstPath + '/' + foldername

@@ -41,6 +41,7 @@ class eKMapExporter:
         mapInfo["Source"] = None # chưa support
 
         mapInfo["Layers"] = self._wrapLayers(self.instance.layerTreeRoot(), None)
+        
         return mapInfo
 
     def _wrapCurrentView(self):
@@ -318,10 +319,9 @@ class eKMapExporter:
 
     def _wrapSymbolLayers(self, symbol):
         self._geoType = symbol.type()
-
         styleLayers = []
         for symbolLayer in symbol.symbolLayers():
-            styleLayer = SymbolLayerFactory.getLayerParser(symbolLayer)
+            styleLayer = SymbolLayerFactory.getLayerParser(symbolLayer, self)
             if styleLayer is not None:
                 styles = styleLayer.parse()
                 if symbolLayer.type() == 0:

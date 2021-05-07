@@ -1,3 +1,5 @@
+from ..ekmap_logger import eKLogger
+
 class SymbolLayerParser:
 
     DEFAULT_MARKER_CONFIG = {
@@ -58,6 +60,7 @@ class SymbolLayerParser:
                 'line-opacity': lineConfig['line-opacity'],
             },
             'layout': {
+                'visibility': True,
                 'line-cap': lineConfig['line-cap'],
                 'line-join': lineConfig['line-join'],
             },
@@ -70,10 +73,19 @@ class SymbolLayerParser:
         return result
 
     def exportFillLayerFormat(self, fillConfig):
-        return {
+        result = {
             'type': 'fill',
             'paint': {
-                'fill-color': fillConfig['fill-color'],
                 'fill-opacity': fillConfig['fill-opacity'],
+            },
+            'layout': {
+                'visibility': True,
             }
         }
+
+        if 'fill-color' in fillConfig:
+            result['paint']['fill-color'] = fillConfig['fill-color']
+        if 'fill-pattern' in fillConfig:
+            result['paint']['fill-pattern'] = fillConfig['fill-pattern']
+
+        return result
