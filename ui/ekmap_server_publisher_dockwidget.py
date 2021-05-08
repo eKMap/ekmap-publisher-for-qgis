@@ -181,48 +181,50 @@ class EKMapServerPublisherDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         filename = self.exportDst + "/MapPackage/mapinfo.json"
         self.progressBar.setValue(0)
 
-        # Create exported forlder
-        os.makedirs(os.path.dirname(filename), exist_ok=True)
-        self.progressBar.setValue(10)
+        try:
+            # Create exported forlder
+            os.makedirs(os.path.dirname(filename), exist_ok=True)
+            self.progressBar.setValue(10)
 
-        # Export MapInfo
-        exporter = eKMapExporter(self.iface, QgsProject.instance())
-        with open(filename, 'w') as outputFile:
-            exportResult = exporter.exportMapInfo()
-            exportResult["Title"] = self.mapName
-            outputFile.write(json.dumps(exportResult, ensure_ascii = False))
-        self.progressBar.setValue(30)
+            # Export MapInfo
+            exporter = eKMapExporter(self.iface, QgsProject.instance())
+            with open(filename, 'w') as outputFile:
+                exportResult = exporter.exportMapInfo()
+                exportResult["Title"] = self.mapName
+                outputFile.write(json.dumps(exportResult, ensure_ascii = False))
+            self.progressBar.setValue(30)
 
-        # Get data source
-        directoryOutput = os.path.dirname(filename)
-        dstPath = directoryOutput + "/" + 'source'
-        os.makedirs(dstPath, exist_ok=True)
-        for layerCode, layerSource in exporter.sourcePaths.items():
-            if os.path.isdir(layerSource):
-                foldername = os.path.basename(layerSource)
-                dstFolder = dstPath + '/' + foldername
-                shutil.copytree(layerSource, dstFolder)
-            else:
-                shutil.copy2(layerSource, dstPath)
-        self.progressBar.setValue(40)
+            # Get data source
+            directoryOutput = os.path.dirname(filename)
+            dstPath = directoryOutput + "/" + 'source'
+            os.makedirs(dstPath, exist_ok=True)
+            for layerCode, layerSource in exporter.sourcePaths.items():
+                if os.path.isdir(layerSource):
+                    foldername = os.path.basename(layerSource)
+                    dstFolder = dstPath + '/' + foldername
+                    shutil.copytree(layerSource, dstFolder)
+                else:
+                    shutil.copy2(layerSource, dstPath)
+            self.progressBar.setValue(40)
 
-        # Get external graphic
-        dstExternalGraphic = directoryOutput + "/sprite"
-        os.makedirs(dstExternalGraphic, exist_ok = True)
-        for externalGraphic in exporter.externalGraphics:
-            shutil.copy2(externalGraphic, dstExternalGraphic)
-        SpriteGenerator.generate(dstExternalGraphic)
-        self.progressBar.setValue(50)
+            # Get external graphic
+            dstExternalGraphic = directoryOutput + "/sprite"
+            os.makedirs(dstExternalGraphic, exist_ok = True)
+            for externalGraphic in exporter.externalGraphics:
+                shutil.copy2(externalGraphic, dstExternalGraphic)
+            SpriteGenerator.generate(dstExternalGraphic)
+            self.progressBar.setValue(50)
 
-        # Compress package
-        shutil.make_archive(self.exportDst + "/MapPackage", "zip", directoryOutput)
-        self.progressBar.setValue(99)
-            
-        # Delete temp file
-        if isClear: # Trường hợp Publish thì sẽ chưa xóa vội mà để xử lý cuối cùng mới thực hiện
-            eKMapCommonHelper.cleanTempDir()
-        shutil.rmtree(self.exportDst + "/MapPackage")
-        self.progressBar.setValue(100)
+            # Compress package
+            shutil.make_archive(self.exportDst + "/MapPackage", "zip", directoryOutput)
+            self.progressBar.setValue(99)
+
+        finally:
+            # Delete temp file
+            if isClear: # Trường hợp Publish thì sẽ chưa xóa vội mà để xử lý cuối cùng mới thực hiện
+                eKMapCommonHelper.cleanTempDir()
+            shutil.rmtree(self.exportDst + "/MapPackage")
+            self.progressBar.setValue(100)
 
     # Lấy tất cả các file trong thư mục có cùng tên
     def _getFilesPathInDirWithSameName(self, directory, name):
@@ -239,38 +241,42 @@ class EKMapServerPublisherDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.lbMessage.setText('In process: Wrap map data')
         self.taskExport(False)
 
-        self.progressBar.setValue(50)
+        try:
+            self.progressBar.setValue(50)
 
-        key = self.getKeyMapping()
-        mappingDict = self.setting.value(SETTING_MAPPING, {})
-        if mappingDict is None:
-            mappingDict = {}
-            
-        # Upload
-        self.lbMessage.setText('In process: Upload map')
-        uploadResult = eKConnector.upload(self.exportDst)
-        packageInfo = json.loads(uploadResult.text)['result']
-        infoResult = eKConnector.info(packageInfo)
-        uploadFile = json.loads(infoResult.text)['result']
-        uploadFile['packageInfo'] = packageInfo
-        eKLogger.log(uploadFile)
-        if isUpdated:
-            uploadFile['MapId'] = int(mappingDict[key])
-        self.progressBar.setValue(80)
+            key = self.getKeyMapping()
+            mappingDict = self.setting.value(SETTING_MAPPING, {})
+            if mappingDict is None:
+                mappingDict = {}
+                
+            # Upload
+            self.lbMessage.setText('In process: Upload map')
+            uploadResult = eKConnector.upload(self.exportDst)
+            packageInfo = json.loads(uploadResult.text)['result']
+            infoResult = eKConnector.info(packageInfo)
+            uploadFile = json.loads(infoResult.text)['result']
+            uploadFile['packageInfo'] = packageInfo
+            eKLogger.log(uploadFile)
+            if isUpdated:
+                uploadFile['MapId'] = int(mappingDict[key])
+            self.progressBar.setValue(80)
 
-        # Publish
-        self.lbMessage.setText('In process: Publish map')
-        r = eKConnector.publish(uploadFile)
-        result = json.loads(r.text)
-        self.progressBar.setValue(100)
-        if result['success']:
-            mapId = result['result']
-            QtWidgets.QMessageBox.about(self, 'Message', 'Publish map successfully! \n' + self.mapName + ' (Id = ' + mapId + ')')
-            # Store mapping
-            mappingDict[key] = mapId
-            self.setting.setValue(SETTING_MAPPING, mappingDict)
-        else:
-            QtWidgets.QMessageBox.about(self, 'Message', 'Publish map fail! ' + r.text)
+            # Publish
+            self.lbMessage.setText('In process: Publish map')
+            r = eKConnector.publish(uploadFile)
+            result = json.loads(r.text)
+            self.progressBar.setValue(100)
+            if result['success']:
+                mapId = result['result']
+                QtWidgets.QMessageBox.about(self, 'Message', 'Publish map successfully! \n' + self.mapName + ' (Id = ' + mapId + ')')
+                # Store mapping
+                mappingDict[key] = mapId
+                self.setting.setValue(SETTING_MAPPING, mappingDict)
+            else:
+                QtWidgets.QMessageBox.about(self, 'Message', 'Publish map fail! ' + r.text)
+        
+        finally:
+            eKMapCommonHelper.cleanTempDir()
 
     def _isProjectContainsMapLayers(self):
         if len(QgsProject.instance().mapLayers()) == 0:
