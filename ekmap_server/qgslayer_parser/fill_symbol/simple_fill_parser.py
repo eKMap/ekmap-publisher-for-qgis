@@ -2,7 +2,6 @@ from .fill_layer_parser import FillLayerParser
 from ...ekmap_common import *
 from ...ekmap_converter import eKConverter
 
-DEFAULT_SIZE = 12
 CURRENT_PATH = str(os.path.dirname(__file__))
 
 class SimpleFillParser(FillLayerParser):
