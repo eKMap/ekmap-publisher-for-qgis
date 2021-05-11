@@ -209,10 +209,11 @@ class EKMapServerPublisherDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
             # Get external graphic
             dstExternalGraphic = directoryOutput + "/sprite"
+            
             os.makedirs(dstExternalGraphic, exist_ok = True)
             for externalGraphic in exporter.externalGraphics:
                 shutil.copy2(externalGraphic, dstExternalGraphic)
-            SpriteGenerator.generate(dstExternalGraphic)
+            # SpriteGenerator.generate(dstExternalGraphic)
             self.progressBar.setValue(50)
 
             # Compress package
