@@ -4,6 +4,7 @@ from .marker_symbol.svg_marker_parser import SvgMarkerParser
 from .marker_symbol.font_marker_parser import FontMarkerParser
 from .line_symbol.simple_line_parser import SimpleLineParser
 from .fill_symbol.simple_fill_parser import SimpleFillParser
+from .fill_symbol.svg_fill_parser import SVGFillParser
 
 class SymbolLayerFactory():
 
@@ -21,4 +22,6 @@ class SymbolLayerFactory():
             return SimpleLineParser(symbolLayer)
         elif layerType == 'SimpleFill':
             return SimpleFillParser(symbolLayer, exporter)
+        elif layerType == 'SVGFill':
+            return SVGFillParser(symbolLayer, exporter)
         return None
