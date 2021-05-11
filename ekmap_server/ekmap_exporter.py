@@ -1,4 +1,4 @@
-from qgis.core import QgsProject, Qgis, QgsRuleBasedRenderer, QgsApplication, QgsMessageLog
+from qgis.core import QgsApplication
 from PyQt5.QtCore import QSize
 from .ekmap_converter import eKConverter
 from .ekmap_logger import eKLogger

@@ -10,7 +10,6 @@ class DatasourceHelper():
     def __init__(self, extension, fileName):
         self.__provider = eKConverter.convertExtensionToName(extension)
         self.__fileName = fileName
-        self.__baseName = fileName + '.' + extension
 
     def get(self, destPath, sourcePath):
         self.__destPath = destPath

@@ -8,7 +8,7 @@ class eKConnector():
     # Whether that the connection to Server is OK
     def isConnectionAvailable(url):
         try:
-            request = requests.get(url, timeout = 5, verify = False)
+            requests.get(url, timeout = 5, verify = False)
             return True
         except:
             return False

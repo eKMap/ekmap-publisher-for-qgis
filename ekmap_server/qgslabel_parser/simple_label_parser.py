@@ -32,7 +32,7 @@ class SimpleLabelParser():
         
         fontName = 'Open Sans Regular,Arial Unicode MS Regular' #labelFormat.font().family()
         fontColor = labelFormat.color().name()
-        fontStyle = labelFormat.namedStyle()
+        # fontStyle = labelFormat.namedStyle()
 
         fontSize = float(labelFormat.size())
         fontSizeUnit = labelFormat.sizeUnit()
@@ -101,7 +101,7 @@ class SimpleLabelParser():
             # 1 = buffer: the size of background = size of label + buffer
             # 2 = fixed: the size of background = fixed
             # 3 = percent: determine by the size of text size
-            sizeType = background.sizeType()
+            # sizeType = background.sizeType()
 
             # Get the size information
             # this return QSizeF object
@@ -118,8 +118,8 @@ class SimpleLabelParser():
             # Get the fill and stroke
             # apply for basic shape only
             if backgroundType < 4:
-                fillColor = background.fillColor().name()
-                strokeColor = background.strokeColor().name()
+                # fillColor = background.fillColor().name()
+                # strokeColor = background.strokeColor().name()
                 strokeWidth = background.strokeWidth()
                 strokeWidthUnit = background.strokeWidthUnit()
 
@@ -139,10 +139,10 @@ class SimpleLabelParser():
         # LINESTRING
         elif layerType == 1:
             # Line has: Parallel, curved, horizontal
-            a = a
+            a = 2
         # POLYGON
         elif layerType == 2:
             # Polygon has: Offset from point, horizontal,
             # around centroid, free, using perimeter,
             # using perimeter (curved), outside polygons
-            a = 1
+            a = 3

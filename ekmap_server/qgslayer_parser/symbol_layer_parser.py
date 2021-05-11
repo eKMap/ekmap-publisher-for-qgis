@@ -1,5 +1,3 @@
-from ..ekmap_logger import eKLogger
-
 class SymbolLayerParser:
 
     DEFAULT_MARKER_CONFIG = {

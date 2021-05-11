@@ -1,7 +1,6 @@
 from .fill_layer_parser import FillLayerParser
 from ...ekmap_common import *
 from ...ekmap_converter import eKConverter
-from ...ekmap_logger import eKLogger
 
 from PIL import Image, ImageDraw
 import hashlib
