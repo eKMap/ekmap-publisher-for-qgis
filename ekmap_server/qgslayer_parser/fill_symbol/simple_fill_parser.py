@@ -2,10 +2,8 @@ from .fill_layer_parser import FillLayerParser
 from ...ekmap_common import *
 from ...ekmap_converter import eKConverter
 
-from PIL import Image, ImageDraw
-import hashlib
-
-DEFAULT_SIZE = 10
+DEFAULT_SIZE = 12
+CURRENT_PATH = str(os.path.dirname(__file__))
 
 class SimpleFillParser(FillLayerParser):
 
@@ -20,12 +18,13 @@ class SimpleFillParser(FillLayerParser):
             fillConfig['fill-color'] = fillColor
             fillConfig['fill-opacity'] = simpleFillLayer.color().alpha() / 255
         else: # Fill with pattern
-            # Export pattern to image
-            patternName = fillStyle + fillColor
-            patternName = hashlib.md5(patternName.encode()).hexdigest()
+            # Need to replace because '_' is splitter
+            patternName = fillStyle.replace('_','') \
+                + "_C" + fillColor
             dstPath = TEMP_LOCATION + '/' + patternName + '.png'
+            shutil.copy2(CURRENT_PATH + '/img/' + fillStyle + '.png', dstPath)
             exporter.externalGraphics.append(dstPath)
-            SimpleFillParser.__drawLinePattern(fillStyle, fillColor, dstPath)
+
             fillConfig['fill-pattern'] = patternName
             fillConfig['fill-opacity'] = simpleFillLayer.color().alpha() / 255
 
@@ -44,33 +43,3 @@ class SimpleFillParser(FillLayerParser):
 
             lineStyleLayer = self.exportLineLayerFormat(lineConfig)
             self.styles.append(lineStyleLayer)
-
-    def __getPattern(fillStyle):
-        pattern = {
-            'horizontal': [(0, DEFAULT_SIZE/2), (DEFAULT_SIZE, DEFAULT_SIZE/2)],
-            'vertical': [(DEFAULT_SIZE/2, 0), (DEFAULT_SIZE/2, DEFAULT_SIZE)],
-            'cross': [(0, DEFAULT_SIZE/2), (DEFAULT_SIZE, DEFAULT_SIZE/2), 
-                        (DEFAULT_SIZE/2, DEFAULT_SIZE/2), 
-                        (DEFAULT_SIZE/2, 0), (DEFAULT_SIZE/2, DEFAULT_SIZE)],
-            'b_diagonal': [(DEFAULT_SIZE, 0), (0, DEFAULT_SIZE)],
-            'f_diagonal': [(0,0), (DEFAULT_SIZE, DEFAULT_SIZE)],
-            'diagonal_x': [(DEFAULT_SIZE, 0), (0, DEFAULT_SIZE), 
-                            (DEFAULT_SIZE/2, DEFAULT_SIZE/2), 
-                            (0, 0), (DEFAULT_SIZE, DEFAULT_SIZE)],
-            'dense1': None,
-            'dense2': None,
-            'dense3': None,
-            'dense4': None,
-            'dense5': None,
-            'dense6': None,
-            'dense7': None
-        }
-        return pattern.get(fillStyle, None)
-
-    def __drawLinePattern(fillStyle, color, dstPath):
-        xy = SimpleFillParser.__getPattern(fillStyle)
-        if xy is not None:
-            img = Image.new('RGBA', (DEFAULT_SIZE, DEFAULT_SIZE), (255, 0, 0, 0))
-            drawImg = ImageDraw.Draw(img)
-            drawImg.line(xy, fill=color ,width=1)
-            img.save(dstPath, 'PNG')

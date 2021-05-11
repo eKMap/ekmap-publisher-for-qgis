@@ -1,6 +1,6 @@
-import os, json, shutil, subprocess, signal, hashlib
+import os, json, shutil, subprocess, hashlib
 
-from qgis.PyQt import QtGui, QtWidgets, uic
+from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtCore import pyqtSignal, QSettings
 from qgis.core import Qgis, QgsProject, QgsMessageLog
 
@@ -11,7 +11,6 @@ from ..ekmap_server.ekmap_common import *
 from ..ekmap_server.ekmap_connector import eKConnector
 from ..ekmap_server.ekmap_exporter import eKMapExporter
 from ..ekmap_server.ekmap_logger import eKLogger
-from ..ekmap_server.sprite_generator import SpriteGenerator
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'ekmap_server_publisher_dockwidget_base.ui'))

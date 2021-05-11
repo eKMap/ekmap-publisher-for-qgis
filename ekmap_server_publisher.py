@@ -186,7 +186,7 @@ class EKMapServerPublisher:
 
         # remove this statement if dockwidget is to remain
         # for reuse if plugin is reopened
-        # Commented next statement since it causes QGIS crashe
+        # Commented next statement since it causes QGIS crashed
         # when closing the docked window:
         # self.dockwidget = None
 

@@ -1,4 +1,4 @@
-import os, shutil, requests
+import os, shutil
 
 TEMP_LOCATION = str(os.path.dirname(os.path.dirname(__file__))) + '/tmp'
 
