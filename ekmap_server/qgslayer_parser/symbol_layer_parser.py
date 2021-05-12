@@ -31,7 +31,7 @@ class SymbolLayerParser:
         return self.styles
     
     # Using eKMarker - user definition format based on Mapbox
-    # because Mapbox style specifiation not support other format
+    # because Mapbox style specification not support other format
     # Mapbox using image instead
     # in this case, eKMapServer would render image based on definition format
     def exporteKMarkerLayerFormat(self, shapeConfig):
