@@ -4,7 +4,7 @@ from ...ekmap_converter import eKConverter
 class MarkerLayerParser(SymbolLayerParser):
 
     def __init__(self, markerLayer):
-        # Inherit styles and properties atribute from parent
+        # Inherit styles and properties attribute from parent
         super().__init__(markerLayer)
         
         self.outlineWidth = self.properties.get('outline_width', 0)

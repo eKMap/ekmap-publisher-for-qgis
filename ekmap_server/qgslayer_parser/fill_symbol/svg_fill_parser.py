@@ -3,7 +3,7 @@ from ...ekmap_converter import eKConverter
 from ...ekmap_common import *
 
 import hashlib, shutil, importlib.util
-from pathlib import Path # if you haven't already done so
+from pathlib import Path 
 
 
 class SVGFillParser(FillLayerParser):
