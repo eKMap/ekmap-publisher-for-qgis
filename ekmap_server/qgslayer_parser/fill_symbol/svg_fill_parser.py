@@ -15,7 +15,7 @@ class SVGFillParser(FillLayerParser):
         rotation = int(svgFillSymbolLayer.angle())
 
         patternWidth = svgFillSymbolLayer.patternWidth()
-        patternWidthUnit = svgFillSymbolLayer.patternWidthUnit()
+        patternWidthUnit = eKConverter.convertRenderUnitValueToName(svgFillSymbolLayer.patternWidthUnit())
         patternWidth = int(eKConverter.convertUnitToPixel(patternWidth, patternWidthUnit))
 
         svgPath = svgFillSymbolLayer.svgFilePath()

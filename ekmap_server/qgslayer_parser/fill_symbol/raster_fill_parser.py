@@ -13,7 +13,7 @@ class RasterFillParser(FillLayerParser):
 
         imageWidth = rasterFillParser.width()
         if imageWidth > 0:
-            imageWidthUnit = rasterFillParser.widthUnit()
+            imageWidthUnit = eKConverter.convertRenderUnitValueToName(rasterFillParser.widthUnit())
             imageWidth = int(eKConverter.convertUnitToPixel(imageWidth, imageWidthUnit))
             imageName = imageName \
                 + '_W' + str(imageWidth) \
