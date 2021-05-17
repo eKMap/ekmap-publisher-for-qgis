@@ -8,6 +8,7 @@ from .fill_symbol.svg_fill_parser import SVGFillParser
 from .fill_symbol.raster_fill_parser import RasterFillParser
 from .fill_symbol.point_fill_parser import PointFillParser
 from .fill_symbol.line_fill_parser import LineFillParser
+from .fill_symbol.centroid_fill_parser import CentroidFillParser
 
 class SymbolLayerFactory():
 
@@ -46,4 +47,6 @@ class SymbolLayerFactory():
             return PointFillParser(symbolLayer, exporter)
         elif layerType == 'LinePatternFill':
             return LineFillParser(symbolLayer, exporter)
+        elif layerType == 'CentroidFill':
+            return CentroidFillParser(symbolLayer, exporter)
         return None
