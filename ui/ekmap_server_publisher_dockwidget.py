@@ -181,7 +181,7 @@ class EKMapServerPublisherDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.progressBar.setValue(0)
 
         try:
-            # Create exported forlder
+            # Create exported folder
             os.makedirs(os.path.dirname(filename), exist_ok=True)
             self.progressBar.setValue(10)
 
@@ -198,10 +198,12 @@ class EKMapServerPublisherDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             dstPath = directoryOutput + "/" + 'source'
             os.makedirs(dstPath, exist_ok=True)
             for layerCode, layerSource in exporter.sourcePaths.items():
+                eKLogger.log(layerCode + ' ^^^ ' + layerSource)
                 if os.path.isdir(layerSource):
                     foldername = os.path.basename(layerSource)
                     dstFolder = dstPath + '/' + foldername
-                    shutil.copytree(layerSource, dstFolder)
+                    if not os.path.exists(dstFolder):
+                        shutil.copytree(layerSource, dstFolder)
                 else:
                     shutil.copy2(layerSource, dstPath)
             self.progressBar.setValue(40)

@@ -32,10 +32,8 @@ class DatasourceHelper():
         folderPath = self.__destPath + '/' + self.__fileName
         os.makedirs(folderPath, exist_ok=True)
         sourceDir = os.path.dirname(self.__sourcePath)
-        eKLogger.log('SHAPEFILE=====')
         for filePath in self.__getFilesPathInDirWithSameName(sourceDir, self.__fileName):
             shutil.copy2(filePath, folderPath)
-            eKLogger.log(filePath + ' --- ' + folderPath)
         return folderPath
     def _getGeoJSON(self):
         # Path: (Folder)/(Basename).json

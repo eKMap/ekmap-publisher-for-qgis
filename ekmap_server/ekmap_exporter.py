@@ -184,8 +184,6 @@ class eKMapExporter:
         tableName = sourceBasename[0]
         provider = sourceBasename[-1]
 
-        eKLogger.log(sourceBasename)
-
         # Hash the source path to make a key
         keySource = hashlib.md5(sourcePath.encode()).hexdigest()
         dstFolder = TEMP_LOCATION + '/source'
@@ -194,7 +192,6 @@ class eKMapExporter:
             sourceHelper = DatasourceHelper(provider, tableName)
             dstPath = sourceHelper.get(dstFolder, sourcePath)
             self.sourcePaths[keySource] = dstPath
-            eKLogger.log(sourcePath + ' --- ' + dstFolder + ' --- ' + dstPath)
 
         ext = eKConverter.getExtension(provider)
         if provider is None:
