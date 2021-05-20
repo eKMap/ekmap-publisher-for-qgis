@@ -61,7 +61,7 @@ class eKConverter():
         }
         return switcher.get(strokeType, []) # None = solid
 
-    def convertGraphicNameToVieType(name):
+    def convertGraphicName(name):
         switcher = {
             "circle": "circle",
             "square": "square",

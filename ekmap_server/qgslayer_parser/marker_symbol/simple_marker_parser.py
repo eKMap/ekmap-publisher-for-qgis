@@ -22,7 +22,7 @@ class SimpleMarkerParser(MarkerLayerParser):
         else:
             # Convert the shape of QGIS to shape of eKMap
             # If eKMap not support, default convert to CIRCLE
-            markerName = eKConverter.convertGraphicNameToVieType(markerName)
+            markerName = eKConverter.convertGraphicName(markerName)
             
         shapeConfig = self.DEFAULT_MARKER_CONFIG
         shapeConfig['marker-name'] = markerName
