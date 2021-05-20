@@ -48,19 +48,17 @@ class eKConverter():
         # In QGis2 it is reverse
         return level
 
-    def convertStrokeTypeToVieType(strokeType):
+    def convertStrokeTypeToDashArray(strokeType, strokeWidth):
+        dotWidth = strokeWidth
+        dashWidth = strokeWidth * 3
+        spacing = strokeWidth * 3 / 2
+
         switcher = {
-            "dash": [3, 2], # "dash",
-            # "solid": "solid",
-            "dash dot": [3, 2, 1, 2], # "dashdot",
-            "dot": [1, 2], # "dot",
-            # update support "dash dot dot"
-            "dash dot dot": [3, 2, 1, 2, 1, 2],
-            # missing "longdash"
-            # missing "longdashdot"
+            "dash": [dashWidth, spacing], # "dash",
+            "dash dot": [dashWidth, spacing, dotWidth, spacing], # "dashdot",
+            "dot": [dotWidth, spacing], # "dot",
+            "dash dot dot": [dashWidth, spacing, dotWidth, spacing, dotWidth, spacing],
         }
-        # Old version
-        # return switcher.get(strokeType, "solid")
         return switcher.get(strokeType, []) # None = solid
 
     def convertGraphicNameToVieType(name):

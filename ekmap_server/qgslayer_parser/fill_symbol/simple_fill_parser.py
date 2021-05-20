@@ -38,7 +38,7 @@ class SimpleFillParser(FillLayerParser):
             lineConfig['line-opacity'] = simpleFillLayer.strokeColor().alpha() / 255
 
             outlineStyle = self.properties.get("outline_style")
-            lineConfig['line-dasharray'] = eKConverter.convertStrokeTypeToVieType(outlineStyle)
+            lineConfig['line-dasharray'] = eKConverter.convertStrokeTypeToDashArray(outlineStyle, self.outlineWidth)
 
             lineStyleLayer = self.exportLineLayerFormat(lineConfig)
             self.styles.append(lineStyleLayer)
