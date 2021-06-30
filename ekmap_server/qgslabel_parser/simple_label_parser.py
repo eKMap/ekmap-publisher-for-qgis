@@ -164,11 +164,19 @@ class SimpleLabelParser():
             return 'bottom'
 
     def __getRotation(self):
-        placement = self.settings.placement
-
-        # Only offset from point has Rotation
-        if placement == 1:
-            return self.settings.angleOffset
-        # Other does not have
+        # In-case user defined rotation:
+        definedProperties = self.settings.dataDefinedProperties()
+        LABEL_ROTATION = 96
+        rotationProperty = definedProperties.property(LABEL_ROTATION)
+        if rotationProperty.isActive():
+            fieldBase = rotationProperty.field()
+            return ['get', fieldBase]
         else:
-            return 0
+            placement = self.settings.placement
+            # Only offset from point has Rotation
+            if placement == 1:
+                return self.settings.angleOffset
+            else:
+                return 0
+
+        
