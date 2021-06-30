@@ -114,8 +114,11 @@ class eKMapExporter:
                     style = json.dumps(style)
                     layer["Style"] = style
 
-                minLevel = eKConverter.convertScaleToLevel(mapLayer.minimumScale())
-                maxLevel = eKConverter.convertScaleToLevel(mapLayer.maximumScale())
+                minLevel = 0 
+                maxLevel = 22
+                if mapLayer.hasScaleBasedVisibility():
+                    minLevel = eKConverter.convertScaleToLevel(mapLayer.minimumScale())
+                    maxLevel = eKConverter.convertScaleToLevel(mapLayer.maximumScale())
                 if (maxLevel == 0):
                     maxLevel = 22
                     
