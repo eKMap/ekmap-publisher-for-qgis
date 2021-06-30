@@ -61,8 +61,11 @@ class SimpleLabelParser():
             'text-field': ["get", field],
             'text-size':  fontSize,
             'text-offset': [xOffset, yOffset],
+            'text-anchor': self.__getAnchor(),
+            'text-rotate': self.__getRotation(),
             'symbol-placement': placement,
         }
+
         return {
             'type': 'symbol',
             'paint': labelPaint,
@@ -134,7 +137,9 @@ class SimpleLabelParser():
         # Refer: https://qgis.org/api/classQgsWkbTypes.html#a60e72c2f73cb07fdbcdbc2d5068b5d9c
         # POINT
         if layerType == 0:
-            # Point has: Cartographic, around point, offset from point
+            # Point has: Cartographic (6), 
+            # around point (0), 
+            # offset from point (1)
             a = 1
         # LINESTRING
         elif layerType == 1:
@@ -146,3 +151,24 @@ class SimpleLabelParser():
             # around centroid, free, using perimeter,
             # using perimeter (curved), outside polygons
             a = 3
+
+    def __getAnchor(self):
+        placement = self.settings.placement
+
+        # Only offset from point has Anchor
+        if placement == 1:
+            quadOffset = self.settings.quadOffset
+            return eKConverter.convertQuadrantToAnchor(quadOffset)
+        # Other set default
+        else:
+            return 'bottom'
+
+    def __getRotation(self):
+        placement = self.settings.placement
+
+        # Only offset from point has Rotation
+        if placement == 1:
+            return self.settings.angleOffset
+        # Other does not have
+        else:
+            return 0

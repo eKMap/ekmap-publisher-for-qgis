@@ -36,7 +36,7 @@ class CentroidFillParser(FillLayerParser):
             'type': 'symbol',
             'layout': {
                 'icon-image': markerPatternName,
-                'symbol-placement': 'point'
+                'symbol-placement': 'line-center' # point'
             },
             'paint': {
                 'icon-opacity': centroidFillLayer.subSymbol().opacity()

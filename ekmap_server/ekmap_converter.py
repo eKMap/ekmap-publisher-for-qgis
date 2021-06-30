@@ -121,9 +121,9 @@ class eKConverter():
             2: "line", # Parallel
             # 3: "curved",
             4: "point", # Horizontal
-            # 5: "free",
+            5: "line", #"free",
             # 6: "ordered-position-around-point",
-            # 7: "perimeter-curved",
+            7: "line", #"perimeter-curved",
             # 8: "outside-polygon",
         }
         return switcher.get(placementValue, "point")
@@ -143,3 +143,17 @@ class eKConverter():
             'square': 'square'
         }
         return switcher.get(lineCap, 'butt')
+
+    def convertQuadrantToAnchor(quadOffset):
+        switcher = {
+            0: 'bottom-right',
+            1: 'bottom',
+            2: 'bottom-left',
+            3: 'right',
+            4: 'center',
+            5: 'left',
+            6: 'top-right',
+            7: 'top',
+            8: 'top-left'
+        }
+        return switcher.get(quadOffset, 'bottom')
