@@ -76,14 +76,15 @@ class EKMapServerPublisherDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         currentServer = self.setting.value(SETTING_SERVER, "")
         inputServer = self.txtServer.text().strip().rstrip('/')
         if currentServer != inputServer:
-            if eKConnector.isConnectionAvailable(inputServer):
+            version = eKConnector.getVersion(inputServer)
+            if version is None:
+                QtWidgets.QMessageBox.about(self, 'Message', 'Connection is not available!')
+                self.txtServer.setText(currentServer)
+            else:
                 self.setting.setValue(SETTING_SERVER, inputServer)
                 self.btnLogin.setEnabled(True)
                 self.logoutEvent()
-                QtWidgets.QMessageBox.about(self, 'Message', 'Connect successfully to:\n' + inputServer)
-            else:
-                QtWidgets.QMessageBox.about(self, 'Message', 'Connection is not available!')
-                self.txtServer.setText(currentServer)
+                QtWidgets.QMessageBox.about(self, 'Message', 'Connect successfully to:\n' + inputServer + ' ' + version)
 
     def openLoginDialog(self):
         if self.dlgLogin is None:

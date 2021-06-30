@@ -93,3 +93,16 @@ class eKConnector():
         except Exception as ex:
             eKLogger.log(str(ex))
             return None
+
+    def getVersion(inputServer):
+        url = inputServer + API_VERSION
+        try:
+            r = requests.get(url, verify = False)
+            if eKConnector.isResponseSuccess(r.text):
+                result = json.loads(r.text)
+                return result['result']
+            else:
+                return None
+        except Exception as ex:
+            eKLogger.log(str(ex))
+            return None
