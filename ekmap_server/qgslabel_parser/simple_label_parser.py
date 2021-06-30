@@ -30,7 +30,7 @@ class SimpleLabelParser():
         xOffset = float(self.settings.xOffset)
         yOffset = float(self.settings.yOffset)
         
-        fontName = 'Open Sans Regular,Arial Unicode MS Regular' #labelFormat.font().family()
+        fontName = labelFormat.font().family()
         fontColor = labelFormat.color().name()
         # fontStyle = labelFormat.namedStyle()
 
