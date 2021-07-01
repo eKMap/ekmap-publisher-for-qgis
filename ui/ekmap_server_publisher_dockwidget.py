@@ -127,13 +127,13 @@ class EKMapServerPublisherDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         finally:
             self.outProgressState()
 
-    def publishEvent(self):
+    def publishEvent(self, collectionId):
         self.dlgPublish.close()
         self.exportDst = TEMP_LOCATION
         self.inProgressState()
 
         try:
-            self.taskPublish(False)
+            self.taskPublish(False, collectionId)
         except Exception as e:
             QtWidgets.QMessageBox.about(self, "Message", "Publish fail! " + str(e))
 
@@ -149,7 +149,7 @@ class EKMapServerPublisherDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.inProgressState()
 
         try:
-            self.taskPublish(True)
+            self.taskPublish(True, 0)
         except Exception as e:
             QtWidgets.QMessageBox.about(self, "Message", "Update fail! " + str(e))
 
@@ -239,7 +239,7 @@ class EKMapServerPublisherDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                     filePaths.append(filePath)
         return filePaths
 
-    def taskPublish(self, isUpdated):
+    def taskPublish(self, isUpdated, collectionId):
         # Export zip file
         self.lbMessage.setText('In process: Wrap map data')
         self.taskExport(False)
@@ -259,9 +259,11 @@ class EKMapServerPublisherDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             infoResult = eKConnector.info(packageInfo)
             uploadFile = json.loads(infoResult.text)['result']
             uploadFile['packageInfo'] = packageInfo
-            eKLogger.log(uploadFile)
+            # eKLogger.log(uploadFile)
             if isUpdated:
                 uploadFile['MapId'] = int(mappingDict[key])
+            else:
+                uploadFile['CollectionId'] = collectionId
             self.progressBar.setValue(80)
 
             # Publish

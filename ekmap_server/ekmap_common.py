@@ -17,6 +17,7 @@ API_UPLOAD = "/ekmapserver/rest/services/Package/upload"
 API_INFO = "/ekmapserver/rest/services/Package/info"
 API_PUBLISH = "/ekmapserver/rest/services/Map/Publish"
 API_VERSION = "/ekmapserver/rest/services/version"
+API_COLLECTION = "/ekmapserver/rest/services/collection"
 
 REQUIRE_MIN_SERVER_VERSION = 'v1.0.0'
 

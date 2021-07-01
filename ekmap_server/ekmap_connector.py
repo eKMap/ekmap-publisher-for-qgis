@@ -5,14 +5,6 @@ from qgis.PyQt.QtCore import QSettings
 
 class eKConnector():
 
-    # Whether that the connection to Server is OK
-    def isConnectionAvailable(url):
-        try:
-            requests.get(url, timeout = 5, verify = False)
-            return True
-        except:
-            return False
-
     # Whether the response is success or not
     def isResponseSuccess(resultText):
         result = json.loads(resultText)
@@ -90,6 +82,25 @@ class eKConnector():
             # cookies = QSettings().value(SETTING_COOKIES, None)
             r = requests.post(url, headers = headers, json = data, verify = False)
             return r
+        except Exception as ex:
+            eKLogger.log(str(ex))
+            return None
+
+    def getCollection():
+        server = QSettings().value(SETTING_SERVER, "")
+        url = server + API_COLLECTION
+        authorization = 'Bearer ' + QSettings().value(SETTING_TOKEN, "")
+        headers = {
+            'Authorization': authorization,
+            'Content-Type': 'application/json'
+        }
+        try:
+            r = requests.get(url, headers = headers, verify = False)
+            if eKConnector.isResponseSuccess(r.text):
+                result = json.loads(r.text)
+                return result['result']
+            else:
+                return None
         except Exception as ex:
             eKLogger.log(str(ex))
             return None
