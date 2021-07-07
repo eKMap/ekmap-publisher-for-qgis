@@ -19,7 +19,7 @@ class LineFillParser(FillLayerParser):
 
         file = Path(__file__).resolve()
         parent = file.parent.parent
-        spec = importlib.util.spec_from_file_location("eKMap-Publisher-For-QGIS.ekmap_server.qgslayer_parser.symbol_layer_factory", 
+        spec = importlib.util.spec_from_file_location("eKMap-Publisher-For-QGIS.ekmap_core.qgslayer_parser.symbol_layer_factory", 
             str(parent) + "/symbol_layer_factory.py")
         foo = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(foo)

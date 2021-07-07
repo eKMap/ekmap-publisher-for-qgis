@@ -97,8 +97,8 @@ class eKMapExporter:
         layer["Description"] = mapLayer.abstract()
 
         if (mapLayer.providerType() == "ogr" 
-            or mapLayer.providerType() == "delimitedtext"
-            or mapLayer.providerType() == "spatialite"):
+            or mapLayer.providerType() == "delimitedtext" # CSV
+            or mapLayer.providerType() == "spatialite"): # SQLite
             if mapLayer.renderer() is None: # table
                 layer["Type"] = "Table"
             else:
@@ -127,7 +127,7 @@ class eKMapExporter:
             layer["FieldInfo"] = self._wrapFieldInfos(mapLayer)
             layer["SourceWorkspace"] = self._wrapSourceWorkspace(mapLayer)
         else:
-            layer["SourceWorkspace"] = self._wrapSourceWorkspaceProvider(mapLayer)
+            layer["SourceWorkspace"] = self._wrapSourceWorkspaceProxy(mapLayer)
         # layer["DestWorkspace"] = None # ignore in this time
         # layer["Config"] = None # ignore in this time
         layer["Filter"] = self.sourceFilter
@@ -161,7 +161,7 @@ class eKMapExporter:
         return fieldInfo
 
     # For ZXY or some datasource pass by URL
-    def _wrapSourceWorkspaceProvider(self, mapLayer):
+    def _wrapSourceWorkspaceProxy(self, mapLayer):
         sourceWorkspace = {}
 
         source = mapLayer.publicSource()

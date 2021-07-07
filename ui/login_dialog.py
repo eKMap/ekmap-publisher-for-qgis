@@ -1,11 +1,10 @@
-import os, requests, pathlib, requests, json
+import os
 
-from qgis.PyQt import QtGui, QtWidgets, uic
-from qgis.core import Qgis, QgsMessageLog
+from qgis.PyQt import QtWidgets, uic
 
 from .export_dialog import *
-from ..ekmap_server.ekmap_common import *
-from ..ekmap_server.ekmap_connector import eKConnector
+from ..ekmap_core.ekmap_common import *
+from ..ekmap_core.ekmap_connector import eKConnector
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'login_dialog.ui'))

@@ -4,8 +4,8 @@ from qgis.PyQt import QtWidgets, uic
 from qgis.core import QgsProject
 
 from .export_dialog import *
-from ..ekmap_server.ekmap_common import *
-from ..ekmap_server.ekmap_connector import eKConnector
+from ..ekmap_core.ekmap_common import *
+from ..ekmap_core.ekmap_connector import eKConnector
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'publish_dialog.ui'))

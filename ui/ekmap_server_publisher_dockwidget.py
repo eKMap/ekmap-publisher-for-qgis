@@ -7,10 +7,10 @@ from qgis.core import Qgis, QgsProject, QgsMessageLog
 from .login_dialog import LoginDialog
 from .export_dialog import ExportMapDialog
 from .publish_dialog import PublishDialog
-from ..ekmap_server.ekmap_common import *
-from ..ekmap_server.ekmap_connector import eKConnector
-from ..ekmap_server.ekmap_exporter import eKMapExporter
-from ..ekmap_server.ekmap_logger import eKLogger
+from ..ekmap_core.ekmap_common import *
+from ..ekmap_core.ekmap_connector import eKConnector
+from ..ekmap_core.ekmap_exporter import eKMapExporter
+from ..ekmap_core.ekmap_logger import eKLogger
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'ekmap_server_publisher_dockwidget_base.ui'))
