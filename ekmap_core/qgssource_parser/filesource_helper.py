@@ -1,11 +1,11 @@
 from qgis.core import QgsApplication
-from .ekmap_converter import eKConverter
-from .ekmap_logger import eKLogger
-from .ekmap_common import *
+from ..ekmap_converter import eKConverter
+from ..ekmap_logger import eKLogger
+from ..ekmap_common import *
 
 import subprocess
 
-class DatasourceHelper():
+class FileSourceHelper():
 
     def __init__(self, extension, fileName):
         self.__provider = eKConverter.convertExtensionToName(extension)

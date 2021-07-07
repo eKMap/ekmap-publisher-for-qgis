@@ -1,4 +1,4 @@
-import os, shutil
+import os, shutil, re
 
 TEMP_LOCATION = str(os.path.dirname(os.path.dirname(__file__))) + '/tmp'
 
@@ -113,3 +113,10 @@ class eKMapCommonHelper:
         r,g,b,a = rgba.split(',')
         transparent = int(a) / 255
         return transparent
+
+    def getByRegex(inputText, pattern, index = 1):
+        matches = re.search(pattern, inputText)
+        if matches is None:
+            return None
+        else:
+            return matches.group(index)

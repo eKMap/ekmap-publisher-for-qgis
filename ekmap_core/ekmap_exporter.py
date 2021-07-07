@@ -3,22 +3,21 @@ from PyQt5.QtCore import QSize
 from .ekmap_converter import eKConverter
 from .ekmap_logger import eKLogger
 from .ekmap_common import *
-from .datasource_helper import DatasourceHelper
+from .qgssource_parser.datasource_parser import DataSourceParser
 from .qgslayer_parser.symbol_layer_factory import SymbolLayerFactory
 from .qgslabel_parser.simple_label_parser import SimpleLabelParser
 
-import os.path, json, uuid, urllib.parse, hashlib
+import os.path, json, uuid, hashlib
 
 class eKMapExporter:
     
     def __init__(self, iface, instance):
         eKConverter.IFACE = iface
         self.instance = instance
-        self.sourcePaths = {}
+        self.sourceParser = DataSourceParser()
         self.externalGraphics = []
         self.layerSorter = 0
         self.code = ''
-        self.sourceFilter = ''
         self.ogr2ogr = QgsApplication.prefixPath().rstrip('apps/qgis') + '/bin/ogr2ogr.exe'
 
     def exportMapInfo(self):
@@ -95,10 +94,11 @@ class eKMapExporter:
         layer["Title"] = mapLayer.name()
         layer["Code"] = self.code
         layer["Description"] = mapLayer.abstract()
-
-        if (mapLayer.providerType() == "ogr" 
-            or mapLayer.providerType() == "delimitedtext" # CSV
-            or mapLayer.providerType() == "spatialite"): # SQLite
+        providerType = mapLayer.providerType()
+        sourceString = mapLayer.source()
+        if (providerType == "ogr" 
+            or providerType == "delimitedtext" # CSV
+            or providerType == "spatialite"): # SQLite
             if mapLayer.renderer() is None: # table
                 layer["Type"] = "Table"
             else:
@@ -125,12 +125,11 @@ class eKMapExporter:
                 layer["MinLevel"] = minLevel
                 layer["MaxLevel"] = maxLevel
             layer["FieldInfo"] = self._wrapFieldInfos(mapLayer)
-            layer["SourceWorkspace"] = self._wrapSourceWorkspace(mapLayer)
-        else:
-            layer["SourceWorkspace"] = self._wrapSourceWorkspaceProxy(mapLayer)
+            # layer["SourceWorkspace"] = self._wrapSourceWorkspace(mapLayer)
+        layer["SourceWorkspace"] = self.sourceParser.parse(providerType, sourceString)
         # layer["DestWorkspace"] = None # ignore in this time
         # layer["Config"] = None # ignore in this time
-        layer["Filter"] = self.sourceFilter
+        layer["Filter"] = self.sourceParser.currentSourceFilter
         layer["Visible"] = childLayer.isVisible()
         # layer["BaseLayer"] = False # not support
         
@@ -159,81 +158,6 @@ class eKMapExporter:
         fieldInfo["ViewType"] = "lineedit"
         fieldInfo["Sorter"] = increment # tăng dần
         return fieldInfo
-
-    # For ZXY or some datasource pass by URL
-    def _wrapSourceWorkspaceProxy(self, mapLayer):
-        sourceWorkspace = {}
-
-        source = mapLayer.publicSource()
-        if mapLayer.providerType() == 'wms': # URL
-            params = eKMapCommonHelper.urlParamToMap(source)
-            sourceWorkspace["ConnectString"] = urllib.parse.unquote(params["url"])
-            sourceWorkspace["Provider"] = eKConverter.convertExtensionToName(params["type"])
-        elif mapLayer.providerType() == 'gdal' and os.path.exists(source): # Path
-            filename, fileExt = os.path.splitext(source)
-            fileExt = fileExt.strip('.')
-            provider = eKConverter.convertExtensionToName(fileExt)
-            if provider is not None:
-                # Hash the source path to make a key
-                keySource = hashlib.md5(source.encode()).hexdigest()
-                dstFolder = TEMP_LOCATION + '/source'
-                # Check key to make sure that not upload the same source
-                if keySource not in self.sourcePaths:
-                    sourceHelper = DatasourceHelper(fileExt, keySource)
-                    dstPath = sourceHelper.get(dstFolder, source)
-                    self.sourcePaths[keySource] = dstPath
-                    sourceWorkspace["ConnectString"] = 'source\\' + keySource + '.' + fileExt
-                    sourceWorkspace["Provider"] = provider
-
-        return sourceWorkspace
-
-    # Convert all the datasource type to SQLite
-    # Using the export function of QGIS
-    def _wrapSourceWorkspace(self, mapLayer):
-        sourceWorkspace = {}
-        self.sourceFilter = ''
-        
-        publicSource = mapLayer.publicSource()
-        # The FORMAT of public source : (source path) | (layername) | (subset)
-        # The source path has format: (path).(ext) 
-        # the (ext) => Type of datasource
-        publicSourceSplit = publicSource.split('|')
-        sourcePath = publicSourceSplit[0]
-        sourceBasename = os.path.basename(sourcePath).split('.')
-        tableName = sourceBasename[0]
-        provider = sourceBasename[-1]
-
-        # Hash the source path to make a key
-        keySource = hashlib.md5(sourcePath.encode()).hexdigest()
-        dstFolder = TEMP_LOCATION + '/source'
-        # Check key to make sure that not upload the same source
-        if keySource not in self.sourcePaths:
-            sourceHelper = DatasourceHelper(provider, tableName)
-            dstPath = sourceHelper.get(dstFolder, sourcePath)
-            self.sourcePaths[keySource] = dstPath
-
-        ext = eKConverter.getExtension(provider)
-        if provider is None:
-            ext = 'shp'
-            provider = 'Shapefile'
-        basename = tableName + '.' + ext
-
-        if provider == 'shp':
-            path = 'source' + '\\' + tableName + '\\' + basename
-        else:
-            path = 'source' + '\\' + basename
-        sourceWorkspace['ConnectString'] = path
-
-        for sourceSplit in publicSourceSplit:
-            if 'layername=' in sourceSplit:
-                tableName = sourceSplit.split('layername=')[1]
-            elif 'subset=' in sourceSplit:
-                self.sourceFilter = sourceSplit.split('subset=')[1]
-
-        sourceWorkspace['Provider'] = provider
-        sourceWorkspace['TableName'] = tableName
-
-        return sourceWorkspace
 
     def _wrapStyleLabel(self, mapLayer):
         # if mapLayer.labeling() is None:
