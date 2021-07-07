@@ -163,11 +163,27 @@ class eKMapExporter:
     # For ZXY or some datasource pass by URL
     def _wrapSourceWorkspaceProvider(self, mapLayer):
         sourceWorkspace = {}
-        params = eKMapCommonHelper.urlParamToMap(mapLayer.publicSource())
 
-        if mapLayer.providerType() == 'wms':
+        source = mapLayer.publicSource()
+        if mapLayer.providerType() == 'wms': # URL
+            params = eKMapCommonHelper.urlParamToMap(source)
             sourceWorkspace["ConnectString"] = urllib.parse.unquote(params["url"])
             sourceWorkspace["Provider"] = eKConverter.convertExtensionToName(params["type"])
+        elif mapLayer.providerType() == 'gdal' and os.path.exists(source): # Path
+            filename, fileExt = os.path.splitext(source)
+            fileExt = fileExt.strip('.')
+            provider = eKConverter.convertExtensionToName(fileExt)
+            if provider is not None:
+                # Hash the source path to make a key
+                keySource = hashlib.md5(source.encode()).hexdigest()
+                dstFolder = TEMP_LOCATION + '/source'
+                # Check key to make sure that not upload the same source
+                if keySource not in self.sourcePaths:
+                    sourceHelper = DatasourceHelper(fileExt, keySource)
+                    dstPath = sourceHelper.get(dstFolder, source)
+                    self.sourcePaths[keySource] = dstPath
+                    sourceWorkspace["ConnectString"] = 'source\\' + keySource + '.' + fileExt
+                    sourceWorkspace["Provider"] = provider
 
         return sourceWorkspace
 

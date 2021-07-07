@@ -16,7 +16,6 @@ class DatasourceHelper():
         self.__sourcePath = sourcePath
 
         os.makedirs(destPath, exist_ok=True)
-
         if self.__provider is None:
             methodName = '_getOther'
         else:
@@ -54,6 +53,11 @@ class DatasourceHelper():
     def _getSQLite(self):
         # Path: (Folder)/(Basename).sqlite
         dstPath = self.__destPath + '/' + self.__fileName + '.sqlite'
+        shutil.copyfile(self.__sourcePath, dstPath)
+        return dstPath
+    def _getGeoTiff(self):
+        # Path: (Folder)/(Basename).tif
+        dstPath = self.__destPath + '/' + self.__fileName + '.tif'
         shutil.copyfile(self.__sourcePath, dstPath)
         return dstPath
     def _getOther(self):

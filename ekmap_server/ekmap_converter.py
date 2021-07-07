@@ -96,7 +96,8 @@ class eKConverter():
             "geojson": "GeoJSON",
             "xyz": "ZXY",
             "gdb": "GDB",
-            "sqlite": "SQLite"
+            "sqlite": "SQLite",
+            "tif": "GeoTiff"
         }
         return switcher.get(provider, None)
 
