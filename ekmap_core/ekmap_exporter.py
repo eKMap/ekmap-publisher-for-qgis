@@ -98,6 +98,7 @@ class eKMapExporter:
         sourceString = mapLayer.source()
         if (providerType == "ogr" 
             or providerType == "delimitedtext" # CSV
+            or providerType == "mssql"
             or providerType == "spatialite"): # SQLite
             if mapLayer.renderer() is None: # table
                 layer["Type"] = "Table"
