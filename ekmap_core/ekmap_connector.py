@@ -100,7 +100,7 @@ class eKConnector():
                 result = json.loads(r.text)
                 return result['result']
             else:
-                return None
+                return ['Site (root)']
         except Exception as ex:
             eKLogger.log(str(ex))
             return None
