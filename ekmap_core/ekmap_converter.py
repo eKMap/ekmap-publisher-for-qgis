@@ -97,7 +97,7 @@ class eKConverter():
             "xyz": "ZXY",
             "gdb": "GDB",
             "sqlite": "SQLite",
-            "tif": "GeoTiffMB"
+            "tif": "GeoTiff"
         }
         return switcher.get(provider, None)
 
