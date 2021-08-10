@@ -1,4 +1,4 @@
-from qgis.core import QgsApplication
+from qgis.core import QgsApplication, QgsMessageLog
 from PyQt5.QtCore import QSize
 from .ekmap_converter import eKConverter
 from .ekmap_logger import eKLogger
@@ -38,7 +38,7 @@ class eKMapExporter:
         mapInfo["MaxLevel"] = maxLevel 
         mapInfo["Config"] = None # chưa support
         mapInfo["Source"] = None # chưa support
-
+        QgsMessageLog.logMessage('Start Layer')
         mapInfo["Layers"] = self._wrapLayers(self.instance.layerTreeRoot(), None)
         
         return mapInfo
@@ -61,6 +61,7 @@ class eKMapExporter:
     def _wrapLayers(self, root, parentCode):
         layers = []
         for childLayer in root.children():
+            QgsMessageLog.logMessage('Layer ' + str(childLayer.name()))
             layer = {}
             self.code = str(uuid.uuid4())
             if childLayer.nodeType() == 1: # feature layer
@@ -180,7 +181,7 @@ class eKMapExporter:
             return self._wrapSingleSymbolStyle(mapLayer.renderer())
         if mapLayer.renderer().type() == 'categorizedSymbol':
             return self._wrapCategoriesSymbolStyle(mapLayer.renderer())
-        return eKMapCommonHelper.getDefaultStyleBaseOnGeoType(mapLayer.type().value)
+        return None # eKMapCommonHelper.getDefaultStyleBaseOnGeoType(mapLayer.type().value)
 
     def _wrapSingleSymbolStyle(self, singleSymbolRenderer):
         # self._geoType = singleSymbolRenderer.symbol().type()
