@@ -13,10 +13,15 @@ class LineLayerParser(SymbolLayerParser):
         
     def initBaseLineConfig(self, lineLayer):
         lineConfig = {}
+        lineStyle = self.properties.get("line_style")
+        if lineStyle == 'no':
+            lineConfig['visibility'] = 'none'
+        else:
+            lineConfig['visibility'] = 'visible'
+
         lineConfig['line-width'] = self.outlineWidth
         lineConfig['line-color'] = lineLayer.color().name()
         lineConfig['line-opacity'] = lineLayer.color().alpha() / 255
-        lineStyle = self.properties.get("line_style")
         lineConfig['line-dasharray'] = eKConverter.convertStrokeTypeToDashArray(lineStyle, self.outlineWidth)
 
         lineConfig['line-cap'] = eKConverter.convertLineCap(self.properties.get('capstyle'))

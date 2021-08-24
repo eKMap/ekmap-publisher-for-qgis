@@ -58,7 +58,7 @@ class SymbolLayerParser:
                 'line-opacity': lineConfig['line-opacity'],
             },
             'layout': {
-                'visibility': 'visible',
+                'visibility': lineConfig['visibility'],
                 'line-cap': lineConfig['line-cap'],
                 'line-join': lineConfig['line-join'],
             },
