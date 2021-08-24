@@ -72,6 +72,7 @@ class eKMapExporter:
             else: # group layer
                 layer = self._wrapGroupLayer(childLayer)
 
+            # layer["Id"] = self.layerSorter
             self.layerSorter = self.layerSorter + 1
             layer["Sorter"] = self.layerSorter
 
@@ -93,7 +94,7 @@ class eKMapExporter:
         mapLayer = childLayer.layer()
         layer = {}
         layer["Title"] = mapLayer.name()
-        layer["Code"] = self.code
+        layer["Code"] = mapLayer.id() #self.code
         layer["Description"] = mapLayer.abstract()
         providerType = mapLayer.providerType()
         sourceString = mapLayer.source()
@@ -120,7 +121,7 @@ class eKMapExporter:
                 maxLevel = 22
                 if mapLayer.hasScaleBasedVisibility():
                     minLevel = eKConverter.convertScaleToLevel(mapLayer.minimumScale())
-                    maxLevel = eKConverter.convertScaleToLevel(mapLayer.maximumScale())
+                    maxLevel = eKConverter.convertScaleToLevel(mapLayer.maximumScale()) - 1
                 if (maxLevel == 0):
                     maxLevel = 22
                     
@@ -299,12 +300,12 @@ class eKMapExporter:
         filterExps = filterExpression.split(filterType) # filterExpression.split(" ")
         if len(filterExps) != 2:
             return None
-        filterObj["property"] = filterExps.pop(0).replace("\"","")
+        filterObj["property"] = filterExps.pop(0).replace("\"","").strip()
         filterObj["type"] = filterType #filterExps.pop(0)
 
         # Giá trị có thể có khoảng trắng ở giữa
         # Bỏ đi dấu nháy ở đầu
-        filterObj["value"] = " ".join(filterExps).replace("'","")
+        filterObj["value"] = " ".join(filterExps).replace("'","").strip()
         return [
             "==",
             [
