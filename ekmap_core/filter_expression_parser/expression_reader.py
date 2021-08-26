@@ -6,7 +6,13 @@ class ExpressionReader:
     operations.extend(priorityComparision)
     operations.extend(andOrComparision)
 
-    def toList(expression):
+    def read(expression):
+        lst = ExpressionReader.__split(expression)
+        #lst = ExpressionReader.__parsePriorityExpression(lst, ExpressionReader.priorityComparision)
+        #lst = ExpressionReader.__parseExpression(lst)
+        return lst
+
+    def __split(expression):
         lst = []
         chars = ''
         acceptSpace = False
@@ -30,13 +36,7 @@ class ExpressionReader:
             lst.append(chars)
         return lst
 
-    def read(expression):
-        lst = ExpressionReader.toList(expression)
-        lst = ExpressionReader.parsePriorityExpression(lst, ExpressionReader.priorityComparision)
-        lst = ExpressionReader.parseExpression(lst)
-        return lst
-
-    def parsePriorityExpression(lst, operations):
+    def __parsePriorityExpression(lst, operations):
         newLst = []
         for i in range(0, len(lst) - 1):
             if lst[i] in operations:
@@ -52,7 +52,7 @@ class ExpressionReader:
                 newLst.append(lst[i])
         return newLst
 
-    def parseExpression(lst):
+    def __parseExpression(lst):
         if lst is None:
             return None
         while len(lst) > 1:
@@ -75,4 +75,6 @@ class ExpressionReader:
         return None
 
 # subset = 'loaiDatHT = \'CAN\' OR loaiDatHT = \'COC\' OR loaiDatHT = \'CQP\' OR loaiDatHT = \'DBV\' OR loaiDatHT = \'DCK\' OR loaiDatHT = \'DCH\' OR loaiDatHT = \'DDT\' OR loaiDatHT = \'DGD\' OR loaiDatHT = \'DKH\' OR loaiDatHT = \'DNL\' OR loaiDatHT = \'DSH\' OR loaiDatHT = \'DSN\' OR loaiDatHT = \'DTS\' OR loaiDatHT = \'DTT\' OR loaiDatHT = \'DVH\' OR loaiDatHT = \'DXH\' OR loaiDatHT = \'DYT\' OR loaiDatHT = \'SKC\' OR loaiDatHT = \'SKK\' OR loaiDatHT = \'SKN\' OR loaiDatHT = \'SKX\' OR loaiDatHT = \'TIN\' OR loaiDatHT = \'TMD\' OR loaiDatHT = \'TON\' OR loaiDatHT = \'TSC\' OR loaiDatHT = \'TSN\' OR loaiDatHT = \'SKX\' OR loaiDatHT = \'DRA\' OR loaiDatHT = \'NTD\''
-# print(eval(ExpressionReader.read(subset)[0]))
+# print(ExpressionReader.read(subset))
+testIn = '\"loaiDatHT\" in (\'DGT\')'
+print(ExpressionReader.read(testIn))

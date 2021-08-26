@@ -6,8 +6,9 @@ from .ekmap_common import *
 from .qgssource_parser.datasource_parser import DataSourceParser
 from .qgslayer_parser.symbol_layer_factory import SymbolLayerFactory
 from .qgslabel_parser.simple_label_parser import SimpleLabelParser
+from .qgs_symbology_parser.symbology_factory import SymbologyFactory
 
-import os.path, json, uuid, hashlib
+import json, uuid
 
 class eKMapExporter:
     
@@ -63,13 +64,14 @@ class eKMapExporter:
         for childLayer in root.children():
             QgsMessageLog.logMessage('Layer ' + str(childLayer.name()))
             layer = {}
-            self.code = str(uuid.uuid4())
             if childLayer.nodeType() == 1: # feature layer
                 # Nếu không phải vector layer thì bỏ qua
                 #if childLayer.layer().type().value != 0:
                 #    continue
+                self.code = childLayer.layer().id()
                 layer = self._wrapFeatureLayer(childLayer)
             else: # group layer
+                self.code = str(uuid.uuid4())
                 layer = self._wrapGroupLayer(childLayer)
 
             # layer["Id"] = self.layerSorter
@@ -94,7 +96,7 @@ class eKMapExporter:
         mapLayer = childLayer.layer()
         layer = {}
         layer["Title"] = mapLayer.name()
-        layer["Code"] = mapLayer.id() #self.code
+        layer["Code"] = self.code
         layer["Description"] = mapLayer.abstract()
         providerType = mapLayer.providerType()
         sourceString = mapLayer.source()
@@ -105,14 +107,15 @@ class eKMapExporter:
             if mapLayer.renderer() is None: # table
                 layer["Type"] = "Table"
             else:
+                geoType = mapLayer.geometryType()
+                layer["GeoType"] = eKConverter.convertLayerToGeoType(geoType)
                 layer["Type"] = "Feature Layer"
-                style = self._wrapStyle(mapLayer) # gọi trước để lấy giá trị GeoType
+                style = self._wrapStyle(mapLayer)
                 styleLabel = self._wrapStyleLabel(mapLayer)
                 if styleLabel is not None:
                     # style.append(styleLabel)
                     styleLabel = json.dumps(styleLabel)
                     layer["StyleLabel"] = styleLabel
-                layer["GeoType"] = eKConverter.convertLayerToGeoType(self._geoType)
                 if style is not None:
                     style = json.dumps(style)
                     layer["Style"] = style
@@ -174,143 +177,9 @@ class eKMapExporter:
         return labelLayer.read()
 
     def _wrapStyle(self, mapLayer):
-        if mapLayer.renderer() is None: # table
+        renderer = mapLayer.renderer()
+        symbologyParser = SymbologyFactory.getSymbologyParser(renderer)
+        if symbologyParser is None:
             return None
-        if mapLayer.renderer().type() == 'RuleRenderer':
-            return self._wrapRuleBasedStyle(mapLayer.renderer())
-        if mapLayer.renderer().type() == 'singleSymbol':
-            return self._wrapSingleSymbolStyle(mapLayer.renderer())
-        if mapLayer.renderer().type() == 'categorizedSymbol':
-            return self._wrapCategoriesSymbolStyle(mapLayer.renderer())
-        return None # eKMapCommonHelper.getDefaultStyleBaseOnGeoType(mapLayer.type().value)
-
-    def _wrapSingleSymbolStyle(self, singleSymbolRenderer):
-        # self._geoType = singleSymbolRenderer.symbol().type()
-        return self._wrapSymbolLayers(singleSymbolRenderer.symbol())
-        
-    def _wrapRuleBasedStyle(self, ruleBasedRenderer):
-        styles = []
-        for childRule in ruleBasedRenderer.rootRule().children():
-            styleLayers = self._wrapSymbolLayers(childRule.symbol())
-
-            # Set filter
-            if childRule.filter() is not None:
-                expression = childRule.filter().expression()
-                for styleLayer in styleLayers:
-                    styleLayer['filter'] = self._wrapFilterExpression(expression)
-
-            # Set active
-            isVisible = 'visible'
-            if not childRule.active():
-                isVisible = 'none'
-            for styleLayer in styleLayers:
-                styleLayer['layout']['visibility'] = isVisible
-
-            styles.extend(styleLayers) 
-        return styles
-
-    def _wrapCategoriesSymbolStyle(self, renderer):
-        styles = []
-        selectedProperty = renderer.classAttribute()
-
-        # Find else conditions:
-        categoryDumps = renderer.dump().split('\n')
-        otherValues = []
-        for categoryDump in categoryDumps:
-            lineSplit = categoryDump.split('::')
-            if len(lineSplit) > 1 and lineSplit[0] != '':
-                otherValues.append(lineSplit[0])
-        elseFilter = [
-            "!",
-            [
-                "in",
-                [
-                    "get",
-                    renderer.classAttribute()
-                ],
-                [
-                    "literal",
-                    otherValues
-                ]
-            ]
-        ]
-
-        for category in renderer.categories():
-            styleLayers = self._wrapSymbolLayers(category.symbol())
-            # Get filter
-            dummyInfos = category.dump().split('::')
-            currentFilter = elseFilter
-            if dummyInfos[0] != '':
-                currentFilter = [
-                    "==",
-                    [
-                        "get",
-                        selectedProperty,
-                    ],
-                    category.value()
-                ]
-            for styleLayer in styleLayers:
-                styleLayer['filter'] = currentFilter
-
-            # Set active
-            isVisible = 'visible'
-            if not category.renderState():
-                isVisible = 'none'
-            for styleLayer in styleLayers:
-                styleLayer['layout']['visibility'] = isVisible
-
-            styles.extend(styleLayers) 
-        return styles
-
-    def _wrapSymbolLayers(self, symbol):
-        self._geoType = symbol.type()
-        styleLayers = []
-        for symbolLayer in symbol.symbolLayers():
-            styleLayer = SymbolLayerFactory.getLayerParser(symbolLayer, self)
-            if styleLayer is not None:
-                styles = styleLayer.parse()
-                if symbolLayer.type() == 0:
-                    key = json.dumps(styles)
-                    key = hashlib.md5(key.encode()).hexdigest()
-                    sizeUnit = eKConverter.convertRenderUnitValueToName(symbol.sizeUnit())
-                    size = eKConverter.convertUnitToPixel(symbol.size(), sizeUnit)
-                    exportImagePath = TEMP_LOCATION + '/' + key + '.png'
-                    symbol.exportImage(exportImagePath, 'png', QSize(size, size))
-                    if os.path.isfile(exportImagePath):
-                        self.externalGraphics.append(exportImagePath)
-                        styleLayers.append({
-                            'type': 'symbol',
-                            'layout': {
-                                'icon-image': key
-                            }
-                        })
-                    #else:
-                    #    QgsMessageLog.logMessage(json.dumps(styles) + " is exported fail!", 'eKMapServer Publisher', level=Qgis.Info)
-                # Case Line and Polygon
-                else:
-                    styleLayers.extend(styleLayer.parse())
-
-        return styleLayers
-
-    def _wrapFilterExpression(self, filterExpression):
-        filterObj = {}
-        # Filter có dạng "{Tên trường} {Filter} {Giá trị}"
-        # Tạm thời hỗ trợ type Equal
-        filterType = "="
-        filterExps = filterExpression.split(filterType) # filterExpression.split(" ")
-        if len(filterExps) != 2:
-            return None
-        filterObj["property"] = filterExps.pop(0).replace("\"","").strip()
-        filterObj["type"] = filterType #filterExps.pop(0)
-
-        # Giá trị có thể có khoảng trắng ở giữa
-        # Bỏ đi dấu nháy ở đầu
-        filterObj["value"] = " ".join(filterExps).replace("'","").strip()
-        return [
-            "==",
-            [
-                "get",
-                filterObj["property"]
-            ],
-            filterObj["value"]
-        ]
+        else:
+            return symbologyParser.parse(renderer, self)
