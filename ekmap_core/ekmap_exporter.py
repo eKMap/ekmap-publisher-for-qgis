@@ -5,7 +5,7 @@ from .ekmap_logger import eKLogger
 from .ekmap_common import *
 from .qgssource_parser.datasource_parser import DataSourceParser
 from .qgslayer_parser.symbol_layer_factory import SymbolLayerFactory
-from .qgslabel_parser.simple_label_parser import SimpleLabelParser
+from .qgslabel_parser.label_factory import LabelFactory
 from .qgs_symbology_parser.symbology_factory import SymbologyFactory
 
 import json, uuid
@@ -170,11 +170,16 @@ class eKMapExporter:
         #     return None
         # elif mapLayer.labeling().type() != 'simple':
         #     return DEFAULT_STYLE_LABEL
-        return self._wrapSimpleLabelStyle(mapLayer)
+        # return self._wrapSimpleLabelStyle(mapLayer)
+        labelParser = LabelFactory.getLabelParser(mapLayer)
+        if labelParser is None:
+            return None
+        else:
+            return labelParser.read()
 
-    def _wrapSimpleLabelStyle(self, mapLayer):
-        labelLayer = SimpleLabelParser(mapLayer)
-        return labelLayer.read()
+    # def _wrapSimpleLabelStyle(self, mapLayer):
+    #     labelLayer = SimpleLabelParser(mapLayer)
+    #     return labelLayer.read()
 
     def _wrapStyle(self, mapLayer):
         renderer = mapLayer.renderer()
