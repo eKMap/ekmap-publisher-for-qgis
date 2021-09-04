@@ -1,10 +1,7 @@
 from qgis.core import QgsApplication, QgsMessageLog
-from PyQt5.QtCore import QSize
 from .ekmap_converter import eKConverter
-from .ekmap_logger import eKLogger
 from .ekmap_common import *
 from .qgssource_parser.datasource_parser import DataSourceParser
-from .qgslayer_parser.symbol_layer_factory import SymbolLayerFactory
 from .qgslabel_parser.label_factory import LabelFactory
 from .qgs_symbology_parser.symbology_factory import SymbologyFactory
 
@@ -166,20 +163,11 @@ class eKMapExporter:
         return fieldInfo
 
     def _wrapStyleLabel(self, mapLayer):
-        # if mapLayer.labeling() is None:
-        #     return None
-        # elif mapLayer.labeling().type() != 'simple':
-        #     return DEFAULT_STYLE_LABEL
-        # return self._wrapSimpleLabelStyle(mapLayer)
         labelParser = LabelFactory.getLabelParser(mapLayer)
         if labelParser is None:
             return None
         else:
             return labelParser.read()
-
-    # def _wrapSimpleLabelStyle(self, mapLayer):
-    #     labelLayer = SimpleLabelParser(mapLayer)
-    #     return labelLayer.read()
 
     def _wrapStyle(self, mapLayer):
         renderer = mapLayer.renderer()
