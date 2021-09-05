@@ -1,5 +1,6 @@
 from .symbology_parser import SymbologyParser
 from ..filter_expression_parser.filter_parser import FilterParser
+from ..ekmap_converter import eKConverter
 
 class RuleBasedParser(SymbologyParser):
 
@@ -14,6 +15,16 @@ class RuleBasedParser(SymbologyParser):
                 expression = childRule.filter().expression()
                 for styleLayer in styleLayers:
                     styleLayer['filter'] = FilterParser.parse(expression)
+
+            # Set min/max scale
+            minScale = childRule.minimumScale()
+            if minScale > 0:
+                minLevel = eKConverter.convertScaleToLevel(minScale)
+                styleLayer['minzoom'] = minLevel
+            maxScale = childRule.maximumScale()
+            if maxScale > 0:
+                maxLevel = eKConverter.convertScaleToLevel(maxScale) - 1
+                styleLayer['maxzoom'] = maxLevel
 
             # Set active
             isVisible = 'visible'

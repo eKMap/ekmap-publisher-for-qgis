@@ -122,7 +122,7 @@ class eKMapExporter:
                 if mapLayer.hasScaleBasedVisibility():
                     minLevel = eKConverter.convertScaleToLevel(mapLayer.minimumScale())
                     maxLevel = eKConverter.convertScaleToLevel(mapLayer.maximumScale()) - 1
-                if (maxLevel == 0):
+                if (maxLevel <= 0):
                     maxLevel = 22
                     
                 layer["MinLevel"] = minLevel
