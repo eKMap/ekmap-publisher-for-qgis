@@ -1,5 +1,6 @@
 EUQ_PATTERN = '(.*) = (.*)'
 IN_PATTERN = '(.*) in (.*)'
+NOT_NULL_PATTERN = "(.*) is not null"
 
 import re
 
@@ -10,8 +11,21 @@ class FilterParser():
             return FilterParser._parseEuq(filterExpression)
         elif re.match(IN_PATTERN, filterExpression):
             return FilterParser._parseIn(filterExpression)
+        elif re.match(NOT_NULL_PATTERN, filterExpression):
+            return FilterParser._parseNotNull(filterExpression)
         else:
             return None
+
+    def _parseNotNull(filterExperssion):
+        property = filterExperssion.split(" ")[0].strip().strip("\"")
+        return [
+            "!=",
+            [
+                "get",
+                property
+            ],
+            None
+        ]
 
     def _parseEuq(filterExpression):
         filterObj = {}
