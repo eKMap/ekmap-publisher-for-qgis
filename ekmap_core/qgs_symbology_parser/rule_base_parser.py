@@ -14,7 +14,9 @@ class RuleBasedParser(SymbologyParser):
             if childRule.filter() is not None:
                 expression = childRule.filter().expression()
                 for styleLayer in styleLayers:
-                    styleLayer['filter'] = FilterParser.parse(expression)
+                    filter = FilterParser.parse(expression)
+                    if filter is not None:
+                        styleLayer['filter'] = filter
 
             # Set min/max scale
             minScale = childRule.minimumScale()

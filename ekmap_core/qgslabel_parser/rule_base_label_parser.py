@@ -17,7 +17,8 @@ class RuleBasedLabelParser(LabelParser):
             # Set Filter
             filterExp = childStyle.filterExpression()
             filter = FilterParser.parse(filterExp)
-            styleLabel['filter'] = filter
+            if filter is not None:
+                styleLabel['filter'] = filter
 
             # Set min/max scale
             minScale = childStyle.minimumScale()
