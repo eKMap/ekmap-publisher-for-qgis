@@ -53,11 +53,11 @@ class FilterParser():
     def _parseIn(filterExpression):
         # Filter có dạng "{Tên trường} in ({Giá trị 1}, {Giá trị 2}, ... {Giá trị n})"
         # Tạm thời hỗ trợ type Equal
-        filterType = "in"
+        filterType = " in "
         filterExps = filterExpression.split(filterType) # filterExpression.split(" ")
         if len(filterExps) != 2:
             return None
-        propety = filterExps[0].replace("\"","").strip()
+        property = filterExps[0].replace("\"","").strip()
 
         # Giá trị có thể có khoảng trắng ở giữa
         # Bỏ đi dấu nháy ở đầu
@@ -66,7 +66,10 @@ class FilterParser():
             "in",
             [
                 "get",
-                propety
+                property
             ],
-            values
+            [
+                "literal",
+                values
+            ]
         ]
