@@ -17,6 +17,9 @@ class LabelParser:
 
         xOffset = float(settings.xOffset)
         yOffset = float(settings.yOffset)
+        offsetUnit = settings.offsetUnits
+        xOffset = eKConverter.convertUnitToPixel(value=xOffset, unit=offsetUnit)
+        yOffset = eKConverter.convertUnitToPixel(value=yOffset, unit=offsetUnit)
         
         fontName = labelFormat.font().family()
         fontColor = labelFormat.color().name()
