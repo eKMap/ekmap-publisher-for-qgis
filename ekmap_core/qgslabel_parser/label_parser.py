@@ -1,3 +1,4 @@
+from PyQt5.QtWidgets import QMainWindow
 from ..ekmap_converter import eKConverter
 import re
 from qgis.core import QgsMessageLog
@@ -20,7 +21,10 @@ class LabelParser:
         offsetUnit = settings.offsetUnits
         xOffset = eKConverter.convertUnitToPixel(value=xOffset, unit=offsetUnit)
         yOffset = eKConverter.convertUnitToPixel(value=yOffset, unit=offsetUnit)
-        
+        if xOffset == 0 and yOffset == 0:
+            yOffset = -1.5
+
+
         fontName = labelFormat.font().family()
         fontColor = labelFormat.color().name()
         # fontStyle = labelFormat.namedStyle()

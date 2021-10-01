@@ -36,7 +36,6 @@ class eKMapExporter:
         mapInfo["MaxLevel"] = maxLevel 
         mapInfo["Config"] = None # chưa support
         mapInfo["Source"] = None # chưa support
-        QgsMessageLog.logMessage('Start Layer')
         mapInfo["Layers"] = self._wrapLayers(self.instance.layerTreeRoot(), None)
         
         return mapInfo
@@ -59,7 +58,6 @@ class eKMapExporter:
     def _wrapLayers(self, root, parentCode):
         layers = []
         for childLayer in root.children():
-            QgsMessageLog.logMessage('Layer ' + str(childLayer.name()))
             layer = {}
             if childLayer.nodeType() == 1: # feature layer
                 # Nếu không phải vector layer thì bỏ qua

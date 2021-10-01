@@ -119,11 +119,9 @@ class EKMapServerPublisherDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             path = self.exportDst.replace("/","\\")
             with subprocess.Popen(r'explorer "'+ path + '"'):
                 self.outProgressState()
-
         except Exception as e:
             QtWidgets.QMessageBox.about(self, "Message", "Export fail! " + str(e))
             QgsMessageLog.logMessage(str(e), 'eKMapPublisher', level=Qgis.Info)
-
         finally:
             self.outProgressState()
 
