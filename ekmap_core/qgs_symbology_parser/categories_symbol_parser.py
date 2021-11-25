@@ -10,7 +10,8 @@ class CategoriesSymbolParser(SymbologyParser):
         otherValues = self.__getDetailOtherValues(renderer.dump())
         elseFilter = self.__buildElseFilter(selectedProperty, otherValues)
 
-        pointDict = {}
+        # pointDict = {}
+        pointTuples =  []
         pointFallback = ''
         for category in renderer.categories():
             # Check active
@@ -37,8 +38,10 @@ class CategoriesSymbolParser(SymbologyParser):
                 if currentFilter is None:
                     pointFallback = key
                 else:
-                    pointDict[key] = currentFilter
-        pointStyle = self.__parsePoint(pointDict, pointFallback)
+                    pointTuple = (currentFilter, key)
+                    pointTuples.append(pointTuple)
+                    # pointDict[currentFilter] = key
+        pointStyle = self.__parsePoint(pointTuples, pointFallback)
         if pointStyle is not None:
             styles.append(pointStyle)
         return styles
@@ -94,15 +97,17 @@ class CategoriesSymbolParser(SymbologyParser):
         else:
             return None
 
-    def __parsePoint(self, pointDict, pointDefault):
-        if len(pointDict) == 0:
+    def __parsePoint(self, pointTuples, pointDefault):
+        if len(pointTuples) == 0:
             return None
         else:
             case = []
             case.append('case')
-            for key in pointDict:
-                case.append(pointDict[key]) # condition
-                case.append(key) # image name
+            for pointTuple in pointTuples:
+                for pTuple in pointTuple:
+                    case.append(pTuple)
+                # case.append(key) # condition
+                # case.append(pointDict[key]) # image name
             case.append(pointDefault)
             return {
                 'type': 'symbol',
