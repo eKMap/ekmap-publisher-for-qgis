@@ -80,6 +80,9 @@ class EKMapServerPublisherDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             if version is None:
                 QtWidgets.QMessageBox.about(self, 'Message', 'Connection is not available!')
                 self.txtServer.setText(currentServer)
+            elif version < REQUIRE_MIN_SERVER_VERSION:
+                QtWidgets.QMessageBox.about(self, 'Message', 'Unsupported ' + version + '! Required at least ' + REQUIRE_MIN_SERVER_VERSION)
+                self.txtServer.setText(currentServer)
             else:
                 self.setting.setValue(SETTING_SERVER, inputServer)
                 self.btnLogin.setEnabled(True)

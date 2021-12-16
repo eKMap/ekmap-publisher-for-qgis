@@ -13,13 +13,14 @@ SETTING_SERVER = "ekmap_server_publisher/server"
 SETTING_MAPPING = "ekmap_server_publisher/mapping"
 
 API_LOGIN = "/api/TokenAuth/Authenticate"
+API_EXTERNAL_LOGIN = "/api/TokenAuth/eKMapCloudAuthenticate"
 API_UPLOAD = "/ekmapserver/rest/services/package/upload"
 API_INFO = "/ekmapserver/rest/services/package/info"
 API_PUBLISH = "/ekmapserver/rest/services/map/publish"
 API_VERSION = "/ekmapserver/rest/services/version"
 API_COLLECTION = "/ekmapserver/rest/services/collection/owner"
 
-REQUIRE_MIN_SERVER_VERSION = 'v1.1.0'
+REQUIRE_MIN_SERVER_VERSION = 'v1.3.1'
 
 DEFAULT_STYLE_POINT = {
     "defaultStyle": {

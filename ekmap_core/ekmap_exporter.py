@@ -171,6 +171,6 @@ class eKMapExporter:
         renderer = mapLayer.renderer()
         symbologyParser = SymbologyFactory.getSymbologyParser(renderer)
         if symbologyParser is None:
-            return None
+            return []
         else:
             return symbologyParser.parse(renderer, self)

@@ -17,7 +17,14 @@ class eKConnector():
     # Call LoginService
     def login(username, password):
         server = QSettings().value(SETTING_SERVER, "")
-        url = server + API_LOGIN
+        url = server + API_LOGIN # Login using eKMap Server Account
+        result = eKConnector.__login(username, password, url)
+        if result is False:
+            url = server + API_EXTERNAL_LOGIN # Login using eKMap Clound Account
+            result = eKConnector.__login(username, password, url)
+        return result
+
+    def __login(username, password, url):
         try:
             r = requests.post(url, json= {
                 "userNameOrEmailAddress": username,
@@ -26,7 +33,6 @@ class eKConnector():
             if eKConnector.isResponseSuccess(r.text):
                 eKLogger.log(r.text)
                 result = json.loads(r.text)
-                # QSettings().setValue(SETTING_COOKIES, r.cookies)
                 QSettings().setValue(SETTING_TOKEN, result['result']['accessToken'])
                 QSettings().setValue(SETTING_USERNAME, username)
                 return True

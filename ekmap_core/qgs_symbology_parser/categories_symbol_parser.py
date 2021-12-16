@@ -95,7 +95,7 @@ class CategoriesSymbolParser(SymbologyParser):
             key = styleLayer['layout']['icon-image']
             return key
         else:
-            return None
+            return ""
 
     def __parsePoint(self, pointTuples, pointDefault):
         if len(pointTuples) == 0:
